@@ -21,84 +21,24 @@ const estilo = `
 <style>
 body { margin:0; font-family: Arial; background:#f1f5f9; color:#1e293b; }
 .container { padding:25px; }
-
 h1 { text-align:center; }
-
 .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:20px; }
-
-.card {
-    background:white;
-    padding:30px;
-    border-radius:15px;
-    text-align:center;
-    text-decoration:none;
-    color:#1e293b;
-    font-size:18px;
-    font-weight:bold;
-    box-shadow:0 4px 10px rgba(0,0,0,0.08);
-    transition:0.2s;
-}
+.card { background:white; padding:30px; border-radius:15px; text-align:center; text-decoration:none; color:#1e293b; font-size:18px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.08); transition:0.2s; }
 .card:hover { transform:scale(1.05); }
-
-input {
-    padding:10px;
-    border-radius:8px;
-    border:1px solid #cbd5e1;
-    margin:5px;
-}
-
-button {
-    padding:10px 15px;
-    border:none;
-    border-radius:8px;
-    background:#2563eb;
-    color:white;
-    cursor:pointer;
-    font-weight:bold;
-}
+input { padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin:5px; }
+button { padding:10px 15px; border:none; border-radius:8px; background:#2563eb; color:white; cursor:pointer; font-weight:bold; }
 button:hover { background:#1d4ed8; }
-
-table {
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-    background:white;
-    border-radius:10px;
-    overflow:hidden;
-    box-shadow:0 4px 10px rgba(0,0,0,0.05);
-}
+table { width:100%; border-collapse:collapse; margin-top:20px; background:white; border-radius:10px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
 th { background:#e2e8f0; padding:12px; }
 td { padding:10px; text-align:center; }
 tr:nth-child(even) { background:#f8fafc; }
-
 .stock-bajo { color:#dc2626; font-weight:bold; }
-
-.topbar {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:15px;
-}
-
-.btn-volver {
-    background:#e2e8f0;
-    color:#1e293b;
-    padding:8px 14px;
-    border-radius:8px;
-    text-decoration:none;
-    font-weight:bold;
-    transition:0.2s;
-}
-.btn-volver:hover {
-    background:#cbd5e1;
-    transform:scale(1.05);
-}
-
+.topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+.btn-volver { background:#e2e8f0; color:#1e293b; padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:bold; transition:0.2s; }
+.btn-volver:hover { background:#cbd5e1; transform:scale(1.05); }
 /* Alinear columna Nombre a la izquierda */
-table td:nth-child(2), table th:nth-child(2) {
-    text-align: left;
-    padding-left: 15px;
-}
+table td:nth-child(2), table th:nth-child(2) { text-align: left; padding-left: 15px; }
+.right { text-align:right; }
 </style>
 `;
 
@@ -129,7 +69,6 @@ app.get('/inventario', (req, res) => {
             <a href="/" class="btn-volver">⬅ Volver</a>
         </div>
         <input id="buscar" placeholder="Buscar...">
-
         <h3>Agregar producto</h3>
         <form method="POST" action="/agregar" autocomplete="off" onsubmit="setTimeout(()=>this.reset(),100)">
             <input name="nombre" placeholder="Nombre" autocomplete="off">
@@ -137,7 +76,6 @@ app.get('/inventario', (req, res) => {
             <input name="stock" type="number" placeholder="Stock" autocomplete="off">
             <button>Agregar</button>
         </form>
-
         <table id="tabla">
         <tr>
             <th>ID</th>
@@ -145,8 +83,7 @@ app.get('/inventario', (req, res) => {
             <th>Precio</th>
             <th>Stock</th>
             <th>Acciones</th>
-        </tr>
-        `;
+        </tr>`;
         rows.forEach(p => {
             html += `
             <tr>
@@ -162,8 +99,7 @@ app.get('/inventario', (req, res) => {
                         <button style="background:#dc2626;">Eliminar</button>
                     </form>
                 </td>
-            </tr>
-            `;
+            </tr>`;
         });
         html += `</table>
         <script>
@@ -192,15 +128,13 @@ app.get('/productos', (req, res) => {
         </div>
         <input id="buscar" placeholder="Buscar...">
         <button onclick="excel()">Exportar Excel</button>
-
         <table id="tabla">
         <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Precio</th>
             <th>Stock</th>
-        </tr>
-        `;
+        </tr>`;
         rows.forEach(p => {
             html += `
             <tr>
@@ -208,8 +142,7 @@ app.get('/productos', (req, res) => {
                 <td>${p.nombre}</td>
                 <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
                 <td class="${p.stock < 5 ? 'stock-bajo' : ''}">${p.stock}</td>
-            </tr>
-            `;
+            </tr>`;
         });
         html += `</table>
         <script>
@@ -221,8 +154,7 @@ app.get('/productos', (req, res) => {
             });
         };
         function excel(){
-            let blob = new Blob([document.getElementById("tabla").outerHTML],
-            {type:"application/vnd.ms-excel"});
+            let blob = new Blob([document.getElementById("tabla").outerHTML], {type:"application/vnd.ms-excel"});
             let a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
             a.download = "productos.xls";
@@ -245,8 +177,7 @@ app.get('/ventas', (req, res) => {
                 <td>${p.nombre}</td>
                 <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
                 <td class="${p.stock < 5 ? 'stock-bajo' : ''}">${p.stock}</td>
-            </tr>
-            `;
+            </tr>`;
         });
 
         res.send(`
@@ -256,7 +187,6 @@ app.get('/ventas', (req, res) => {
             <h2>💰 Ventas</h2>
             <a href="/" class="btn-volver">⬅ Volver</a>
         </div>
-
         <input id="buscar" placeholder="Buscar producto...">
         <table id="tabla">
             <tr>
@@ -267,14 +197,11 @@ app.get('/ventas', (req, res) => {
             </tr>
             ${filas}
         </table>
-
         <h3>🧾 Detalle de Venta</h3>
-
         <input id="nombre" placeholder="Producto" disabled>
         <input id="precio" placeholder="Precio" disabled>
         <input id="cantidad" type="number" placeholder="Cantidad">
         <button type="button" onclick="agregarAlCarrito()">Agregar al carrito</button>
-
         <table id="carrito">
             <tr>
                 <th>Producto</th>
@@ -284,13 +211,9 @@ app.get('/ventas', (req, res) => {
                 <th>Acción</th>
             </tr>
         </table>
-
-        <strong>Total: $<span id="total">0</span></strong>
-        <br><br>
+        <strong>Total: $<span id="total">0</span></strong> <br><br>
         <button onclick="confirmarVenta()">Confirmar Venta</button>
-
         </div>
-
         <script>
         let carrito = [];
         let productoSeleccionado = null;
@@ -307,15 +230,11 @@ app.get('/ventas', (req, res) => {
             if(!productoSeleccionado){ alert("Selecciona un producto"); return; }
             if(cant <= 0){ alert("Cantidad inválida"); return; }
             if(cant > productoSeleccionado.stock){ alert("Stock insuficiente"); return; }
-
             let existente = carrito.find(p => p.id === productoSeleccionado.id);
             if(existente){
                 if(existente.cantidad + cant > productoSeleccionado.stock){ alert("Stock insuficiente"); return; }
                 existente.cantidad += cant;
-            } else {
-                carrito.push({...productoSeleccionado, cantidad: cant});
-            }
-
+            } else { carrito.push({...productoSeleccionado, cantidad: cant}); }
             actualizarTabla();
             document.getElementById("nombre").value = "";
             document.getElementById("precio").value = "";
@@ -342,32 +261,25 @@ app.get('/ventas', (req, res) => {
             document.getElementById("total").innerText = total.toLocaleString('es-CL');
         }
 
-        function eliminar(indice){
-            carrito.splice(indice,1);
-            actualizarTabla();
-        }
+        function eliminar(indice){ carrito.splice(indice,1); actualizarTabla(); }
 
         function confirmarVenta(){
             if(carrito.length === 0){ alert("No hay productos en el carrito"); return; }
-
             let form = document.createElement("form");
             form.method = "POST";
             form.action = "/ventas";
-
             carrito.forEach(p=>{
                 let inputId = document.createElement("input");
                 inputId.type = "hidden";
                 inputId.name = "producto_id[]";
                 inputId.value = p.id;
                 form.appendChild(inputId);
-
                 let inputCant = document.createElement("input");
                 inputCant.type = "hidden";
                 inputCant.name = "cantidad[]";
                 inputCant.value = p.cantidad;
                 form.appendChild(inputCant);
             });
-
             document.body.appendChild(form);
             form.submit();
         }
@@ -389,20 +301,13 @@ app.get('/ventas', (req, res) => {
 app.post('/ventas', (req,res)=>{
     const ids = Array.isArray(req.body.producto_id)?req.body.producto_id:[req.body.producto_id];
     const cant = Array.isArray(req.body.cantidad)?req.body.cantidad:[req.body.cantidad];
-
     let detalles = [];
-
     let procesar = ()=>{
         if(detalles.length === ids.length){
             let totalBoleta = 0;
-            detalles.forEach(d=>{
-                let totalFila = d.precio*d.cantidad;
-                totalBoleta += totalFila;
-            });
-
+            detalles.forEach(d=>{ totalBoleta += d.precio*d.cantidad; });
             let subtotal = Math.round(totalBoleta/1.19);
             let iva = totalBoleta - subtotal;
-
             let html = `
             <html>
             <head>
@@ -415,6 +320,7 @@ app.post('/ventas', (req,res)=>{
             .totales { margin-top:10px; }
             .totales p { margin:2px 0; text-align:right; }
             .mensaje { text-align:center; margin-top:15px; font-weight:bold; }
+            button { margin-top:10px; }
             @media print { button { display:none; } }
             </style>
             </head>
@@ -425,8 +331,7 @@ app.post('/ventas', (req,res)=>{
             <hr>
             <h3>Boleta de Venta</h3>
             <table>
-            <tr><th>Producto</th><th>Cantidad</th><th>Precio Un</th><th>Total</th></tr>`;
-
+                <tr><th>Producto</th><th>Cantidad</th><th>Precio Un</th><th>Total</th></tr>`;
             detalles.forEach(d=>{
                 let totalFila = d.precio*d.cantidad;
                 html += `<tr>
@@ -436,7 +341,6 @@ app.post('/ventas', (req,res)=>{
                     <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
                 </tr>`;
             });
-
             html += `</table>
             <div class="totales">
                 <p><strong>Subtotal:</strong> $${subtotal.toLocaleString('es-CL')}</p>
@@ -444,15 +348,12 @@ app.post('/ventas', (req,res)=>{
                 <p><strong>Total:</strong> $${totalBoleta.toLocaleString('es-CL')}</p>
             </div>
             <div class="mensaje">¡Gracias por visitarnos!</div>
-            <br>
             <button onclick="window.print()">🖨 Imprimir Boleta</button>
             <br><a href="/ventas" class="btn-volver">Nueva venta</a>
-            </body></html>
-            `;
+            </body></html>`;
             res.send(html);
         }
     };
-
     ids.forEach((id,i)=>{
         db.get("SELECT * FROM productos WHERE id = ?", [id], (err,p)=>{
             if(!p) return;
@@ -487,25 +388,22 @@ app.get('/editar/:id',(req,res)=>{
             <a href="/inventario" class="btn-volver">⬅ Volver</a>
         </div>
         <form method="POST" autocomplete="off">
-        <input name="nombre" value="${p.nombre}" autocomplete="off">
-        <input name="precio" value="${p.precio}" autocomplete="off">
-        <input name="stock" value="${p.stock}" autocomplete="off">
-        <button>Guardar</button>
+            <input name="nombre" value="${p.nombre}" autocomplete="off">
+            <input name="precio" value="${p.precio}" autocomplete="off">
+            <input name="stock" value="${p.stock}" autocomplete="off">
+            <button>Guardar</button>
         </form>
-        </div>
-        </body></html>
+        </div></body></html>
         `);
     });
 });
 
 app.post('/editar/:id',(req,res)=>{
     const {nombre,precio,stock}=req.body;
-    db.run("UPDATE productos SET nombre=?,precio=?,stock=? WHERE id=?",
-    [nombre,precio,stock,req.params.id]);
+    db.run("UPDATE productos SET nombre=?,precio=?,stock=? WHERE id=?", [nombre,precio,stock,req.params.id]);
     res.redirect('/inventario');
 });
 
-// 🚀 SERVER
-app.listen(3000, ()=>{
-    console.log("http://localhost:3000");
-});
+// 🚀 SERVER para Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, ()=>{ console.log(`Servidor corriendo en puerto ${PORT}`); });
