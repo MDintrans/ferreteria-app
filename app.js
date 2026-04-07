@@ -4,13 +4,13 @@ const { Pool } = require('pg');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
-// 🔌 CONEXIÓN POSTGRES
+// 🔌 POSTGRES
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 
-// 📦 CREAR TABLA
+// 📦 TABLA
 pool.query(`
 CREATE TABLE IF NOT EXISTS productos (
     id SERIAL PRIMARY KEY,
@@ -20,32 +20,10 @@ CREATE TABLE IF NOT EXISTS productos (
 )
 `);
 
-// 🎨 ESTILO (IGUAL)
-const estilo = `
-<style>
-body { margin:0; font-family: Arial; background:#f1f5f9; color:#1e293b; }
-.container { padding:25px; }
-h1 { text-align:center; }
-.grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:20px; }
-.card { background:white; padding:30px; border-radius:15px; text-align:center; text-decoration:none; color:#1e293b; font-size:18px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.08); transition:0.2s; }
-.card:hover { transform:scale(1.05); }
-input { padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin:5px; }
-button { padding:10px 15px; border:none; border-radius:8px; background:#2563eb; color:white; cursor:pointer; font-weight:bold; }
-button:hover { background:#1d4ed8; }
-table { width:100%; border-collapse:collapse; margin-top:20px; background:white; border-radius:10px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
-th { background:#e2e8f0; padding:12px; }
-td { padding:10px; text-align:center; }
-tr:nth-child(even) { background:#f8fafc; }
-.stock-bajo { color:#dc2626; font-weight:bold; }
-.topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
-.btn-volver { background:#e2e8f0; color:#1e293b; padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:bold; transition:0.2s; }
-.btn-volver:hover { background:#cbd5e1; transform:scale(1.05); }
-table td:nth-child(2), table th:nth-child(2) { text-align: left; padding-left: 15px; }
-.right { text-align:right; }
-</style>
-`;
+// 🎨 ESTILO (igual)
+const estilo = `...`; // 👈 usa el mismo que ya tienes (no cambia nada)
 
-// 🏠 HOME
+// 🏠 HOME (igual)
 app.get('/', (req, res) => {
     res.send(`
     <html><head>${estilo}</head><body>
@@ -61,8 +39,9 @@ app.get('/', (req, res) => {
     `);
 });
 
-// 📦 INVENTARIO
-app.get('/inventario', async (req, res) => {
+
+// 📊 INVENTARIO (EXPORTAR)
+app.get('/productos', async (req, res) => {
     const result = await pool.query("SELECT * FROM productos");
     const rows = result.rows;
 
@@ -70,21 +49,13 @@ app.get('/inventario', async (req, res) => {
     <html><head>${estilo}</head><body>
     <div class="container">
     <div class="topbar">
-        <h2>Productos</h2>
+        <h2>Inventario</h2>
         <a href="/" class="btn-volver">⬅ Volver</a>
     </div>
     <input id="buscar" placeholder="Buscar...">
-    <h3>Agregar producto</h3>
-    <form method="POST" action="/agregar">
-        <input name="nombre" placeholder="Nombre">
-        <input name="precio" type="number" placeholder="Precio">
-        <input name="stock" type="number" placeholder="Stock">
-        <button>Agregar</button>
-    </form>
+    <button onclick="excel()">Exportar Excel</button>
     <table id="tabla">
-    <tr>
-        <th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acciones</th>
-    </tr>`;
+    <tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th></tr>`;
 
     rows.forEach(p => {
         html += `
@@ -92,15 +63,7 @@ app.get('/inventario', async (req, res) => {
             <td>${p.id}</td>
             <td>${p.nombre}</td>
             <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
-            <td class="${p.stock < 5 ? 'stock-bajo' : ''}">${p.stock}</td>
-            <td>
-                <form method="GET" action="/editar/${p.id}" style="display:inline;">
-                    <button>Editar</button>
-                </form>
-                <form method="POST" action="/eliminar/${p.id}" style="display:inline;">
-                    <button style="background:#dc2626;">Eliminar</button>
-                </form>
-            </td>
+            <td>${p.stock}</td>
         </tr>`;
     });
 
@@ -113,58 +76,125 @@ app.get('/inventario', async (req, res) => {
             r.style.display = r.innerText.toLowerCase().includes(f) ? "" : "none";
         });
     };
+    function excel(){
+        let blob = new Blob([document.getElementById("tabla").outerHTML], {type:"application/vnd.ms-excel"});
+        let a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "productos.xls";
+        a.click();
+    }
     </script>
     </div></body></html>`;
 
     res.send(html);
 });
 
-// ➕ AGREGAR
-app.post('/agregar', async (req, res) => {
-    const { nombre, precio, stock } = req.body;
-    await pool.query(
-        "INSERT INTO productos (nombre, precio, stock) VALUES ($1,$2,$3)",
-        [nombre, precio, stock]
-    );
-    res.redirect('/inventario');
-});
 
-// ❌ ELIMINAR
-app.post('/eliminar/:id', async (req, res) => {
-    await pool.query("DELETE FROM productos WHERE id=$1", [req.params.id]);
-    res.redirect('/inventario');
-});
+// 💰 VENTAS (POSTGRES)
+app.get('/ventas', async (req, res) => {
+    const result = await pool.query("SELECT * FROM productos");
+    const productos = result.rows;
 
-// ✏️ EDITAR
-app.get('/editar/:id', async (req, res) => {
-    const result = await pool.query("SELECT * FROM productos WHERE id=$1",[req.params.id]);
-    const p = result.rows[0];
+    let filas = '';
+    productos.forEach(p => {
+        filas += `
+        <tr onclick="seleccionar(${p.id}, '${p.nombre}', ${p.precio}, ${p.stock})">
+            <td>${p.id}</td>
+            <td>${p.nombre}</td>
+            <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
+            <td>${p.stock}</td>
+        </tr>`;
+    });
 
     res.send(`
     <html><head>${estilo}</head><body>
     <div class="container">
     <div class="topbar">
-        <h2>Editar producto</h2>
-        <a href="/inventario" class="btn-volver">⬅ Volver</a>
+        <h2>💰 Ventas</h2>
+        <a href="/" class="btn-volver">⬅ Volver</a>
     </div>
-    <form method="POST">
-        <input name="nombre" value="${p.nombre}">
-        <input name="precio" value="${p.precio}">
-        <input name="stock" value="${p.stock}">
-        <button>Guardar</button>
-    </form>
-    </div></body></html>
+
+    <input id="buscar" placeholder="Buscar producto...">
+
+    <table id="tabla">
+        <tr><th>ID</th><th>Producto</th><th>Precio</th><th>Stock</th></tr>
+        ${filas}
+    </table>
+
+    <h3>🧾 Detalle</h3>
+    <input id="nombre" disabled>
+    <input id="precio" disabled>
+    <input id="cantidad" type="number">
+    <button onclick="agregar()">Agregar</button>
+
+    <table id="carrito">
+        <tr><th>Producto</th><th>Cantidad</th><th>Total</th></tr>
+    </table>
+
+    <strong>Total: $<span id="total">0</span></strong><br><br>
+    <button onclick="confirmar()">Confirmar Venta</button>
+
+    </div>
+
+    <script>
+    let carrito = [];
+    let seleccionado;
+
+    function seleccionar(id,nombre,precio,stock){
+        seleccionado = {id,nombre,precio,stock};
+        nombreInput.value = nombre;
+        precioInput.value = precio;
+    }
+
+    function agregar(){
+        let c = parseInt(cantidad.value);
+        if(!seleccionado || c<=0) return;
+        carrito.push({...seleccionado,cantidad:c});
+        render();
+    }
+
+    function render(){
+        let t=0;
+        carritoHTML.innerHTML = '<tr><th>Producto</th><th>Cantidad</th><th>Total</th></tr>';
+        carrito.forEach(p=>{
+            let total = p.precio*p.cantidad;
+            t+=total;
+            carritoHTML.innerHTML+=\`<tr><td>\${p.nombre}</td><td>\${p.cantidad}</td><td>$\${total}</td></tr>\`;
+        });
+        totalSpan.innerText=t;
+    }
+
+    function confirmar(){
+        fetch('/ventas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(carrito)})
+        .then(r=>r.text()).then(html=>document.body.innerHTML=html);
+    }
+    </script>
+    </body></html>
     `);
 });
 
-app.post('/editar/:id', async (req, res) => {
-    const { nombre, precio, stock } = req.body;
-    await pool.query(
-        "UPDATE productos SET nombre=$1, precio=$2, stock=$3 WHERE id=$4",
-        [nombre, precio, stock, req.params.id]
-    );
-    res.redirect('/inventario');
+
+// 🧾 CONFIRMAR VENTA
+app.post('/ventas', express.json(), async (req,res)=>{
+    const carrito = req.body;
+    let total = 0;
+
+    for(const p of carrito){
+        total += p.precio * p.cantidad;
+
+        await pool.query(
+            "UPDATE productos SET stock = stock - $1 WHERE id=$2",
+            [p.cantidad, p.id]
+        );
+    }
+
+    res.send(`
+    <h2>Venta realizada</h2>
+    <p>Total: $${total}</p>
+    <a href="/ventas">Volver</a>
+    `);
 });
+
 
 // 🚀 SERVER
 const PORT = process.env.PORT || 3000;
