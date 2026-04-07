@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS productos (
 )
 `);
 
-// 🎨 (TODO TU ESTILO ORIGINAL - NO SE TOCA)
+// 🎨 ESTILO (IGUAL)
 const estilo = `
 <style>
 body { margin:0; font-family: Arial; background:#f1f5f9; color:#1e293b; }
@@ -45,7 +45,7 @@ table td:nth-child(2), table th:nth-child(2) { text-align: left; padding-left: 1
 </style>
 `;
 
-// 🏠 HOME (igual)
+// 🏠 HOME
 app.get('/', (req, res) => {
     res.send(`
     <html><head>${estilo}</head><body>
@@ -64,30 +64,62 @@ app.get('/', (req, res) => {
 // 📦 INVENTARIO
 app.get('/inventario', async (req, res) => {
     const result = await pool.query("SELECT * FROM productos");
-    let rows = result.rows;
+    const rows = result.rows;
 
-    let html = `...`; // 👈 (NO CAMBIA NADA VISUAL, lo omitimos aquí por largo)
+    let html = `
+    <html><head>${estilo}</head><body>
+    <div class="container">
+    <div class="topbar">
+        <h2>Productos</h2>
+        <a href="/" class="btn-volver">⬅ Volver</a>
+    </div>
+    <input id="buscar" placeholder="Buscar...">
+    <h3>Agregar producto</h3>
+    <form method="POST" action="/agregar">
+        <input name="nombre" placeholder="Nombre">
+        <input name="precio" type="number" placeholder="Precio">
+        <input name="stock" type="number" placeholder="Stock">
+        <button>Agregar</button>
+    </form>
+    <table id="tabla">
+    <tr>
+        <th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acciones</th>
+    </tr>`;
 
-    // ⚠️ IMPORTANTE:
-    // Aquí mantienes EXACTAMENTE tu HTML original
-    // (solo cambias db.all → pool.query como hicimos arriba)
+    rows.forEach(p => {
+        html += `
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.nombre}</td>
+            <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
+            <td class="${p.stock < 5 ? 'stock-bajo' : ''}">${p.stock}</td>
+            <td>
+                <form method="GET" action="/editar/${p.id}" style="display:inline;">
+                    <button>Editar</button>
+                </form>
+                <form method="POST" action="/eliminar/${p.id}" style="display:inline;">
+                    <button style="background:#dc2626;">Eliminar</button>
+                </form>
+            </td>
+        </tr>`;
+    });
 
-    // 👉 Para no hacer esto eterno, ya te dejo patrón abajo 👇
+    html += `</table>
+    <script>
+    document.getElementById("buscar").onkeyup = function(){
+        let f = this.value.toLowerCase();
+        document.querySelectorAll("#tabla tr").forEach((r,i)=>{
+            if(i==0) return;
+            r.style.display = r.innerText.toLowerCase().includes(f) ? "" : "none";
+        });
+    };
+    </script>
+    </div></body></html>`;
+
+    res.send(html);
 });
 
-// 🧠 CAMBIO CLAVE (patrón que usé en TODO)
-
-/// ANTES (sqlite):
-// db.all("SELECT * FROM productos", [], (err, rows) => { ... })
-
-/// AHORA (postgres):
-// const result = await pool.query("SELECT * FROM productos");
-// const rows = result.rows;
-
-/// ANTES:
-// db.run("INSERT INTO productos VALUES(NULL,?,?,?)",[nombre,precio,stock]);
-
-/// AHORA:
+// ➕ AGREGAR
 app.post('/agregar', async (req, res) => {
     const { nombre, precio, stock } = req.body;
     await pool.query(
@@ -97,11 +129,13 @@ app.post('/agregar', async (req, res) => {
     res.redirect('/inventario');
 });
 
+// ❌ ELIMINAR
 app.post('/eliminar/:id', async (req, res) => {
     await pool.query("DELETE FROM productos WHERE id=$1", [req.params.id]);
     res.redirect('/inventario');
 });
 
+// ✏️ EDITAR
 app.get('/editar/:id', async (req, res) => {
     const result = await pool.query("SELECT * FROM productos WHERE id=$1",[req.params.id]);
     const p = result.rows[0];
