@@ -1,22 +1,8 @@
 const express = require('express');
 const { Pool } = require('pg');
-const session = require('express-session');
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
-
-// 🔐 SESIONES
-app.use(session({
-    secret: 'ferreteria-secreta',
-    resave: false,
-    saveUninitialized: true
-}));
-
-// 👤 USUARIO SIMPLE
-const USER = {
-    username: "admin",
-    password: "1234"
-};
 
 // 🔌 POSTGRES (Render)
 const pool = new Pool({
@@ -36,7 +22,7 @@ const pool = new Pool({
     `);
 })();
 
-// 🎨 ESTILO
+// 🎨 ESTILO (igual)
 const estilo = `
 <style>
 body { margin:0; font-family: Arial; background:#f1f5f9; color:#1e293b; }
@@ -56,62 +42,18 @@ tr:nth-child(even) { background:#f8fafc; }
 .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
 .btn-volver { background:#e2e8f0; color:#1e293b; padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:bold; transition:0.2s; }
 .btn-volver:hover { background:#cbd5e1; transform:scale(1.05); }
+/* Alinear columna Nombre a la izquierda */
 table td:nth-child(2), table th:nth-child(2) { text-align: left; padding-left: 15px; }
 .right { text-align:right; }
-.login-box { max-width:400px; margin:80px auto; background:white; padding:30px; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.08); text-align:center; }
 </style>
 `;
-
-// 🔐 LOGIN
-app.get('/login', (req, res) => {
-    res.send(`
-    <html><head>${estilo}</head><body>
-    <div class="login-box">
-        <h2>🔐 Iniciar Sesión</h2>
-        <form method="POST">
-            <input name="username" placeholder="Usuario">
-            <input name="password" type="password" placeholder="Contraseña">
-            <button>Ingresar</button>
-        </form>
-    </div>
-    </body></html>
-    `);
-});
-
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-
-    if(username === USER.username && password === USER.password){
-        req.session.user = username;
-        res.redirect('/');
-    } else {
-        res.send("❌ Usuario o contraseña incorrecta");
-    }
-});
-
-// 🚪 LOGOUT
-app.get('/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.redirect('/login');
-    });
-});
-
-// 🛡️ PROTECCIÓN GLOBAL
-app.use((req, res, next) => {
-    if (req.path === '/login') return next();
-    if (!req.session.user) return res.redirect('/login');
-    next();
-});
 
 // 🏠 HOME
 app.get('/', (req, res) => {
     res.send(`
     <html><head>${estilo}</head><body>
     <div class="container">
-        <div class="topbar">
-            <h1>🔧 Ferretería</h1>
-            <a href="/logout" class="btn-volver">Cerrar sesión</a>
-        </div>
+        <h1>🔧 Ferretería</h1>
         <div class="grid">
             <a class="card" href="/inventario">📦 Productos</a>
             <a class="card" href="/productos">📊 Inventario</a>
@@ -136,9 +78,9 @@ app.get('/inventario', async (req, res) => {
     <input id="buscar" placeholder="Buscar...">
     <h3>Agregar producto</h3>
     <form method="POST" action="/agregar" autocomplete="off" onsubmit="setTimeout(()=>this.reset(),100)">
-        <input name="nombre" placeholder="Nombre">
-        <input name="precio" type="number" placeholder="Precio">
-        <input name="stock" type="number" placeholder="Stock">
+        <input name="nombre" placeholder="Nombre" autocomplete="off">
+        <input name="precio" type="number" placeholder="Precio" autocomplete="off">
+        <input name="stock" type="number" placeholder="Stock" autocomplete="off">
         <button>Agregar</button>
     </form>
     <table id="tabla">
@@ -183,7 +125,7 @@ app.get('/inventario', async (req, res) => {
     res.send(html);
 });
 
-// 📊 PRODUCTOS
+// 📊 PRODUCTOS ERP
 app.get('/productos', async (req, res) => {
     const { rows } = await pool.query("SELECT * FROM productos");
 
@@ -236,9 +178,7 @@ app.get('/productos', async (req, res) => {
     res.send(html);
 });
 
-// 💰 VENTAS (igual que el tuyo completo)
-// 👉 (NO LO MODIFIQUÉ, sigue exactamente igual que el original)
-
+// 💰 VENTAS (carrito igual)
 app.get('/ventas', async (req, res) => {
     const { rows: productos } = await pool.query("SELECT * FROM productos");
 
@@ -270,13 +210,11 @@ app.get('/ventas', async (req, res) => {
         </tr>
         ${filas}
     </table>
-
     <h3>🧾 Detalle de Venta</h3>
     <input id="nombre" placeholder="Producto" disabled>
     <input id="precio" placeholder="Precio" disabled>
     <input id="cantidad" type="number" placeholder="Cantidad">
     <button type="button" onclick="agregarAlCarrito()">Agregar al carrito</button>
-
     <table id="carrito">
         <tr>
             <th>Producto</th>
@@ -286,7 +224,6 @@ app.get('/ventas', async (req, res) => {
             <th>Acción</th>
         </tr>
     </table>
-
     <strong>Total: $<span id="total">0</span></strong> <br><br>
     <button onclick="confirmarVenta()">Confirmar Venta</button>
     </div>
@@ -336,14 +273,14 @@ app.get('/ventas', async (req, res) => {
             let totalFila = p.precio * p.cantidad;
             total += totalFila;
 
-            tabla.innerHTML += "
-<tr>
-    <td>${p.nombre}</td>
-    <td class="right">${p.cantidad}</td>
-    <td class="right">$${p.precio.toLocaleString('es-CL')}</td>
-    <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
-    <td><button onclick='eliminar(${i})'>❌</button></td>
-</tr>";
+            tabla.innerHTML += \`
+            <tr>
+                <td>\${p.nombre}</td>
+                <td class="right">\${p.cantidad}</td>
+                <td class="right">$\${p.precio.toLocaleString('es-CL')}</td>
+                <td class="right">$\${totalFila.toLocaleString('es-CL')}</td>
+                <td><button onclick="eliminar(\${i})">❌</button></td>
+            </tr>\`;
         });
 
         document.getElementById("total").innerText = total.toLocaleString('es-CL');
@@ -394,7 +331,7 @@ app.get('/ventas', async (req, res) => {
     `);
 });
 
-// 💰 POST ventas (igual original)
+// 💰 POST /ventas (boleta EXACTA)
 app.post('/ventas', async (req,res)=>{
     const ids = Array.isArray(req.body.producto_id)?req.body.producto_id:[req.body.producto_id];
     const cant = Array.isArray(req.body.cantidad)?req.body.cantidad:[req.body.cantidad];
@@ -422,24 +359,54 @@ app.post('/ventas', async (req,res)=>{
 
     let html = `
     <html>
-    <body style="font-family: monospace; max-width: 400px; margin:auto;">
-    <h2 style="text-align:center;">🔧 Ferretería</h2>
+    <head>
+    <style>
+    body { font-family: monospace; max-width: 400px; margin:auto; }
+    h2,p { text-align:center; margin:2px; }
+    table { width:100%; border-collapse: collapse; margin-top:10px; }
+    th, td { padding:5px; }
+    td.right { text-align:right; }
+    .totales { margin-top:10px; }
+    .totales p { margin:2px 0; text-align:right; }
+    .mensaje { text-align:center; margin-top:15px; font-weight:bold; }
+    button { margin-top:10px; }
+    @media print { button { display:none; } }
+    </style>
+    </head>
+    <body>
+    <h2>🔧 Ferretería</h2>
+    <p>Tel: +56 9 1234 5678 | correo@ferreteria.cl</p>
+    <p>Dirección: Calle Principal 123, Ciudad</p>
     <hr>
-    <table width="100%">`;
+    <h3>Boleta de Venta</h3>
+    <table>
+        <tr><th>Producto</th><th>Cantidad</th><th>Precio Un</th><th>Total</th></tr>`;
 
     detalles.forEach(d=>{
-        html += `<tr><td>${d.nombre}</td><td>${d.cantidad}</td><td>$${d.precio}</td></tr>`;
+        let totalFila = d.precio*d.cantidad;
+        html += `<tr>
+            <td>${d.nombre}</td>
+            <td class="right">${d.cantidad}</td>
+            <td class="right">$${d.precio.toLocaleString('es-CL')}</td>
+            <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
+        </tr>`;
     });
 
     html += `</table>
-    <p>Total: $${totalBoleta}</p>
-    <button onclick="window.print()">Imprimir</button>
+    <div class="totales">
+        <p><strong>Subtotal:</strong> $${subtotal.toLocaleString('es-CL')}</p>
+        <p><strong>IVA:</strong> $${iva.toLocaleString('es-CL')}</p>
+        <p><strong>Total:</strong> $${totalBoleta.toLocaleString('es-CL')}</p>
+    </div>
+    <div class="mensaje">¡Gracias por visitarnos!</div>
+    <button onclick="window.print()">🖨 Imprimir Boleta</button>
+    <br><a href="/ventas" class="btn-volver">Nueva venta</a>
     </body></html>`;
 
     res.send(html);
 });
 
-// CRUD igual
+// CRUD
 app.post('/agregar', async (req,res)=>{
     const {nombre,precio,stock}=req.body;
     await pool.query("INSERT INTO productos (nombre,precio,stock) VALUES ($1,$2,$3)",[nombre,precio,stock]);
@@ -462,10 +429,10 @@ app.get('/editar/:id', async (req,res)=>{
         <h2>Editar producto</h2>
         <a href="/inventario" class="btn-volver">⬅ Volver</a>
     </div>
-    <form method="POST">
-        <input name="nombre" value="${p.nombre}">
-        <input name="precio" value="${p.precio}">
-        <input name="stock" value="${p.stock}">
+    <form method="POST" autocomplete="off">
+        <input name="nombre" value="${p.nombre}" autocomplete="off">
+        <input name="precio" value="${p.precio}" autocomplete="off">
+        <input name="stock" value="${p.stock}" autocomplete="off">
         <button>Guardar</button>
     </form>
     </div></body></html>
