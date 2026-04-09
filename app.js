@@ -3,13 +3,16 @@ const { Pool } = require('pg');
 const session = require('express-session');
 
 const app = express();
+
+// 🔥 BODY
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // 🔐 SESIONES
 app.use(session({
     secret: 'ferreteria-secreta',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false
 }));
 
 // 👤 USUARIO SIMPLE
@@ -18,22 +21,31 @@ const USER = {
     password: "1234"
 };
 
-// 🔌 POSTGRES (Render)
+// 🔌 POSTGRES (RENDER)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
+
+// 🔥 TEST DB
+pool.connect()
+.then(() => console.log("✅ DB conectada"))
+.catch(err => console.error("❌ Error DB:", err.message));
 
 // 📦 TABLA
 (async () => {
-    await pool.query(`
-    CREATE TABLE IF NOT EXISTS productos (
-        id SERIAL PRIMARY KEY,
-        nombre TEXT,
-        precio INTEGER,
-        stock INTEGER
-    )
-    `);
+    try {
+        await pool.query(`
+        CREATE TABLE IF NOT EXISTS productos (
+            id SERIAL PRIMARY KEY,
+            nombre TEXT,
+            precio INTEGER,
+            stock INTEGER
+        )
+        `);
+    } catch (err) {
+        console.error(err.message);
+    }
 })();
 
 // 🎨 ESTILO
@@ -83,10 +95,10 @@ app.post('/login', (req, res) => {
 
     if (username === USER.username && password === USER.password) {
         req.session.user = username;
-        res.redirect('/');
-    } else {
-        res.send("❌ Usuario o contraseña incorrecta");
+        return res.redirect('/');
     }
+
+    res.send("❌ Usuario o contraseña incorrecta");
 });
 
 // 🚪 LOGOUT
@@ -236,7 +248,7 @@ app.get('/productos', async (req, res) => {
     res.send(html);
 });
 
-// 💰 VENTAS (CORREGIDO)
+// 💰 VENTAS (COMPLETO)
 app.get('/ventas', async (req, res) => {
     const { rows: productos } = await pool.query("SELECT * FROM productos");
 
