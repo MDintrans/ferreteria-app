@@ -81,7 +81,7 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
 
-    if(username === USER.username && password === USER.password){
+    if (username === USER.username && password === USER.password) {
         req.session.user = username;
         res.redirect('/');
     } else {
@@ -236,16 +236,14 @@ app.get('/productos', async (req, res) => {
     res.send(html);
 });
 
-// 💰 VENTAS (igual que el tuyo completo)
-// 👉 (NO LO MODIFIQUÉ, sigue exactamente igual que el original)
-
+// 💰 VENTAS (CORREGIDO)
 app.get('/ventas', async (req, res) => {
     const { rows: productos } = await pool.query("SELECT * FROM productos");
 
     let filas = '';
     productos.forEach(p => {
         filas += `
-        <tr onclick="seleccionar(${p.id}, '${p.nombre}', ${p.precio}, ${p.stock})">
+        <tr onclick='seleccionar(${p.id}, ${JSON.stringify(p.nombre)}, ${p.precio}, ${p.stock})'>
             <td>${p.id}</td>
             <td>${p.nombre}</td>
             <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
@@ -254,231 +252,208 @@ app.get('/ventas', async (req, res) => {
     });
 
     res.send(`
-    <html><head>${estilo}</head><body>
-    <div class="container">
-    <div class="topbar">
-        <h2>💰 Ventas</h2>
-        <a href="/" class="btn-volver">⬅ Volver</a>
-    </div>
-    <input id="buscar" placeholder="Buscar producto...">
-    <table id="tabla">
-        <tr>
-            <th>ID</th>
-            <th>Producto</th>
-            <th>Precio</th>
-            <th>Stock</th>
-        </tr>
-        ${filas}
-    </table>
+<html><head>${estilo}</head><body>
+<div class="container">
+<div class="topbar">
+<h2>💰 Ventas</h2>
+<a href="/" class="btn-volver">⬅ Volver</a>
+</div>
 
-    <h3>🧾 Detalle de Venta</h3>
-    <input id="nombre" placeholder="Producto" disabled>
-    <input id="precio" placeholder="Precio" disabled>
-    <input id="cantidad" type="number" placeholder="Cantidad">
-    <button type="button" onclick="agregarAlCarrito()">Agregar al carrito</button>
+<input id="buscar" placeholder="Buscar producto...">
+<table id="tabla">
+<tr><th>ID</th><th>Producto</th><th>Precio</th><th>Stock</th></tr>
+${filas}
+</table>
 
-    <table id="carrito">
-        <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio</th>
-            <th>Total</th>
-            <th>Acción</th>
-        </tr>
-    </table>
+<h3>🧾 Detalle de Venta</h3>
+<input id="nombre" disabled>
+<input id="precio" disabled>
+<input id="cantidad" type="number">
+<button onclick="agregarAlCarrito()">Agregar al carrito</button>
 
-    <strong>Total: $<span id="total">0</span></strong> <br><br>
-    <button onclick="confirmarVenta()">Confirmar Venta</button>
-    </div>
+<table id="carrito">
+<tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>Acción</th></tr>
+</table>
 
-    <script>
-    let carrito = [];
-    let productoSeleccionado = null;
+<strong>Total: $<span id="total">0</span></strong><br><br>
+<button onclick="confirmarVenta()">Confirmar Venta</button>
 
-    function seleccionar(id, nombre, precio, stock){
-        productoSeleccionado = {id, nombre, precio, stock};
-        document.getElementById("nombre").value = nombre;
-        document.getElementById("precio").value = "$" + precio.toLocaleString('es-CL');
-        document.getElementById("cantidad").value = "";
-    }
+<script>
+let carrito = [];
+let productoSeleccionado = null;
 
-    function agregarAlCarrito(){
-        let cant = parseInt(document.getElementById("cantidad").value) || 0;
-        if(!productoSeleccionado){ alert("Selecciona un producto"); return; }
-        if(cant <= 0){ alert("Cantidad inválida"); return; }
-        if(cant > productoSeleccionado.stock){ alert("Stock insuficiente"); return; }
+function seleccionar(id,nombre,precio,stock){
+productoSeleccionado={id,nombre,precio,stock};
+document.getElementById("nombre").value=nombre;
+document.getElementById("precio").value="$"+precio.toLocaleString('es-CL');
+document.getElementById("cantidad").value="";
+}
 
-        let existente = carrito.find(p => p.id === productoSeleccionado.id);
+function agregarAlCarrito(){
+let cant=parseInt(document.getElementById("cantidad").value)||0;
+if(!productoSeleccionado)return alert("Selecciona un producto");
+if(cant<=0)return alert("Cantidad inválida");
+if(cant>productoSeleccionado.stock)return alert("Stock insuficiente");
 
-        if(existente){
-            if(existente.cantidad + cant > productoSeleccionado.stock){
-                alert("Stock insuficiente"); return;
-            }
-            existente.cantidad += cant;
-        } else {
-            carrito.push({...productoSeleccionado, cantidad: cant});
-        }
+let existente=carrito.find(p=>p.id===productoSeleccionado.id);
 
-        actualizarTabla();
+if(existente){
+if(existente.cantidad+cant>productoSeleccionado.stock)return alert("Stock insuficiente");
+existente.cantidad+=cant;
+}else{
+carrito.push({...productoSeleccionado,cantidad:cant});
+}
 
-        document.getElementById("nombre").value = "";
-        document.getElementById("precio").value = "";
-        document.getElementById("cantidad").value = "";
-        productoSeleccionado = null;
-    }
+actualizarTabla();
 
-    function actualizarTabla(){
-        let tabla = document.getElementById("carrito");
-        tabla.innerHTML = '<tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>Acción</th></tr>';
-        let total = 0;
+document.getElementById("nombre").value="";
+document.getElementById("precio").value="";
+document.getElementById("cantidad").value="";
+productoSeleccionado=null;
+}
 
-        carrito.forEach((p,i)=>{
-            let totalFila = p.precio * p.cantidad;
-            total += totalFila;
+function actualizarTabla(){
+let tabla=document.getElementById("carrito");
+tabla.innerHTML='<tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>Acción</th></tr>';
+let total=0;
 
-            tabla.innerHTML += "
+carrito.forEach((p,i)=>{
+let totalFila=p.precio*p.cantidad;
+total+=totalFila;
+
+tabla.innerHTML+=\`
 <tr>
-    <td>${p.nombre}</td>
-    <td class="right">${p.cantidad}</td>
-    <td class="right">$${p.precio.toLocaleString('es-CL')}</td>
-    <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
-    <td><button onclick='eliminar(${i})'>❌</button></td>
-</tr>";
-        });
-
-        document.getElementById("total").innerText = total.toLocaleString('es-CL');
-    }
-
-    function eliminar(indice){
-        carrito.splice(indice,1);
-        actualizarTabla();
-    }
-
-    function confirmarVenta(){
-        if(carrito.length === 0){
-            alert("No hay productos en el carrito");
-            return;
-        }
-
-        let form = document.createElement("form");
-        form.method = "POST";
-        form.action = "/ventas";
-
-        carrito.forEach(p=>{
-            let inputId = document.createElement("input");
-            inputId.type = "hidden";
-            inputId.name = "producto_id[]";
-            inputId.value = p.id;
-            form.appendChild(inputId);
-
-            let inputCant = document.createElement("input");
-            inputCant.type = "hidden";
-            inputCant.name = "cantidad[]";
-            inputCant.value = p.cantidad;
-            form.appendChild(inputCant);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    document.getElementById("buscar").onkeyup = function(){
-        let f = this.value.toLowerCase();
-        document.querySelectorAll("#tabla tr").forEach((r,i)=>{
-            if(i==0) return;
-            r.style.display = r.innerText.toLowerCase().includes(f) ? "" : "none";
-        });
-    };
-    </script>
-    </body></html>
-    `);
+<td>\${p.nombre}</td>
+<td class="right">\${p.cantidad}</td>
+<td class="right">$\${p.precio.toLocaleString('es-CL')}</td>
+<td class="right">$\${totalFila.toLocaleString('es-CL')}</td>
+<td><button onclick='eliminar(\${i})'>❌</button></td>
+</tr>\`;
 });
 
-// 💰 POST ventas (igual original)
+document.getElementById("total").innerText=total.toLocaleString('es-CL');
+}
+
+function eliminar(i){
+carrito.splice(i,1);
+actualizarTabla();
+}
+
+function confirmarVenta(){
+if(carrito.length===0)return alert("No hay productos");
+
+let form=document.createElement("form");
+form.method="POST";
+form.action="/ventas";
+
+carrito.forEach(p=>{
+let id=document.createElement("input");
+id.type="hidden"; id.name="producto_id[]"; id.value=p.id;
+form.appendChild(id);
+
+let c=document.createElement("input");
+c.type="hidden"; c.name="cantidad[]"; c.value=p.cantidad;
+form.appendChild(c);
+});
+
+document.body.appendChild(form);
+form.submit();
+}
+
+document.getElementById("buscar").onkeyup=function(){
+let f=this.value.toLowerCase();
+document.querySelectorAll("#tabla tr").forEach((r,i)=>{
+if(i==0)return;
+r.style.display=r.innerText.toLowerCase().includes(f)?"":"none";
+});
+};
+</script>
+</body></html>
+`);
+});
+
+// 💰 POST ventas
 app.post('/ventas', async (req,res)=>{
-    const ids = Array.isArray(req.body.producto_id)?req.body.producto_id:[req.body.producto_id];
-    const cant = Array.isArray(req.body.cantidad)?req.body.cantidad:[req.body.cantidad];
+const ids = Array.isArray(req.body.producto_id)?req.body.producto_id:[req.body.producto_id];
+const cant = Array.isArray(req.body.cantidad)?req.body.cantidad:[req.body.cantidad];
 
-    let detalles = [];
+let detalles = [];
 
-    for (let i = 0; i < ids.length; i++) {
-        const { rows } = await pool.query("SELECT * FROM productos WHERE id = $1",[ids[i]]);
-        const p = rows[0];
-        if (!p) continue;
+for (let i = 0; i < ids.length; i++) {
+const { rows } = await pool.query("SELECT * FROM productos WHERE id = $1",[ids[i]]);
+const p = rows[0];
+if (!p) continue;
 
-        let cantidad = parseInt(cant[i]);
-        if(cantidad > p.stock) cantidad = p.stock;
+let cantidad = parseInt(cant[i]);
+if(cantidad > p.stock) cantidad = p.stock;
 
-        await pool.query("UPDATE productos SET stock = stock - $1 WHERE id = $2",[cantidad, ids[i]]);
+await pool.query("UPDATE productos SET stock = stock - $1 WHERE id = $2",[cantidad, ids[i]]);
 
-        detalles.push({nombre: p.nombre, precio: p.precio, cantidad});
-    }
+detalles.push({nombre: p.nombre, precio: p.precio, cantidad});
+}
 
-    let totalBoleta = 0;
-    detalles.forEach(d=>{ totalBoleta += d.precio*d.cantidad; });
+let totalBoleta = 0;
+detalles.forEach(d=>{ totalBoleta += d.precio*d.cantidad; });
 
-    let subtotal = Math.round(totalBoleta/1.19);
-    let iva = totalBoleta - subtotal;
+let html = `
+<html>
+<body style="font-family: monospace; max-width: 400px; margin:auto;">
+<h2 style="text-align:center;">🔧 Ferretería</h2>
+<hr>
+<table width="100%">`;
 
-    let html = `
-    <html>
-    <body style="font-family: monospace; max-width: 400px; margin:auto;">
-    <h2 style="text-align:center;">🔧 Ferretería</h2>
-    <hr>
-    <table width="100%">`;
-
-    detalles.forEach(d=>{
-        html += `<tr><td>${d.nombre}</td><td>${d.cantidad}</td><td>$${d.precio}</td></tr>`;
-    });
-
-    html += `</table>
-    <p>Total: $${totalBoleta}</p>
-    <button onclick="window.print()">Imprimir</button>
-    </body></html>`;
-
-    res.send(html);
+detalles.forEach(d=>{
+html += `<tr><td>${d.nombre}</td><td>${d.cantidad}</td><td>$${d.precio}</td></tr>`;
 });
 
-// CRUD igual
+html += `</table>
+<p>Total: $${totalBoleta}</p>
+<button onclick="window.print()">Imprimir</button>
+</body></html>`;
+
+res.send(html);
+});
+
+// CRUD
 app.post('/agregar', async (req,res)=>{
-    const {nombre,precio,stock}=req.body;
-    await pool.query("INSERT INTO productos (nombre,precio,stock) VALUES ($1,$2,$3)",[nombre,precio,stock]);
-    res.redirect('/inventario');
+const {nombre,precio,stock}=req.body;
+await pool.query("INSERT INTO productos (nombre,precio,stock) VALUES ($1,$2,$3)",[nombre,precio,stock]);
+res.redirect('/inventario');
 });
 
 app.post('/eliminar/:id', async (req,res)=>{
-    await pool.query("DELETE FROM productos WHERE id=$1",[req.params.id]);
-    res.redirect('/inventario');
+await pool.query("DELETE FROM productos WHERE id=$1",[req.params.id]);
+res.redirect('/inventario');
 });
 
 app.get('/editar/:id', async (req,res)=>{
-    const { rows } = await pool.query("SELECT * FROM productos WHERE id=$1",[req.params.id]);
-    const p = rows[0];
+const { rows } = await pool.query("SELECT * FROM productos WHERE id=$1",[req.params.id]);
+const p = rows[0];
 
-    res.send(`
-    <html><head>${estilo}</head><body>
-    <div class="container">
-    <div class="topbar">
-        <h2>Editar producto</h2>
-        <a href="/inventario" class="btn-volver">⬅ Volver</a>
-    </div>
-    <form method="POST">
-        <input name="nombre" value="${p.nombre}">
-        <input name="precio" value="${p.precio}">
-        <input name="stock" value="${p.stock}">
-        <button>Guardar</button>
-    </form>
-    </div></body></html>
-    `);
+res.send(`
+<html><head>${estilo}</head><body>
+<div class="container">
+<div class="topbar">
+<h2>Editar producto</h2>
+<a href="/inventario" class="btn-volver">⬅ Volver</a>
+</div>
+<form method="POST">
+<input name="nombre" value="${p.nombre}">
+<input name="precio" value="${p.precio}">
+<input name="stock" value="${p.stock}">
+<button>Guardar</button>
+</form>
+</div></body></html>
+`);
 });
 
 app.post('/editar/:id', async (req,res)=>{
-    const {nombre,precio,stock}=req.body;
-    await pool.query(
-        "UPDATE productos SET nombre=$1,precio=$2,stock=$3 WHERE id=$4",
-        [nombre,precio,stock,req.params.id]
-    );
-    res.redirect('/inventario');
+const {nombre,precio,stock}=req.body;
+await pool.query(
+"UPDATE productos SET nombre=$1,precio=$2,stock=$3 WHERE id=$4",
+[nombre,precio,stock,req.params.id]
+);
+res.redirect('/inventario');
 });
 
 // 🚀 SERVER
