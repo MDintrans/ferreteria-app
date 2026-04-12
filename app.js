@@ -437,12 +437,34 @@ app.post('/ventas', async (req,res)=>{
             precio: p.precio,
             cantidad
         });
+
+        // 💾 GUARDAR DETALLE EN BD
+await pool.query(
+    `INSERT INTO detalle_ventas 
+    (venta_id, producto_id, nombre, precio, cantidad)
+    VALUES ($1,$2,$3,$4,$5)`,
+    [ventaId, p.id, p.nombre, p.precio, cantidad]
+);
     }
+
+// 🧾 CREAR VENTA EN BD (temporalmente en 0)
+const ventaResult = await pool.query(
+    "INSERT INTO ventas (total) VALUES ($1) RETURNING id",
+    [0]
+);
+
+const ventaId = ventaResult.rows[0].id;
 
     let totalBoleta = 0;
     detalles.forEach(d=>{
         totalBoleta += d.precio * d.cantidad;
     });
+
+    // 🧾 ACTUALIZAR TOTAL DE LA VENTA
+await pool.query(
+    "UPDATE ventas SET total = $1 WHERE id = $2",
+    [totalBoleta, ventaId]
+);
 
     let subtotal = Math.round(totalBoleta / 1.19);
     let iva = totalBoleta - subtotal;
