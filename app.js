@@ -525,22 +525,46 @@ const ventasHoy = await pool.query(queryVentas, params);
 
 // 💰 POST ventas
 app.post('/ventas', async (req,res)=>{
+
     const ids = Array.isArray(req.body.producto_id)?req.body.producto_id:[req.body.producto_id];
     const cant = Array.isArray(req.body.cantidad)?req.body.cantidad:[req.body.cantidad];
 
     let detalles = [];
 
+    // 🧾 CREAR VENTA
+    const ventaResult = await pool.query(
+        "INSERT INTO ventas (total) VALUES ($1) RETURNING id",
+        [0]
+    );
+
+    const ventaId = ventaResult.rows[0].id;
+
+    // 🔄 RECORRER PRODUCTOS
     for (let i = 0; i < ids.length; i++) {
-        const { rows } = await pool.query("SELECT * FROM productos WHERE id = $1",[ids[i]]);
+
+        const { rows } = await pool.query(
+            "SELECT * FROM productos WHERE id = $1",
+            [ids[i]]
+        );
+
         const p = rows[0];
         if (!p) continue;
 
         let cantidad = parseInt(cant[i]);
         if(cantidad > p.stock) cantidad = p.stock;
 
+        // 🔻 DESCONTAR STOCK
         await pool.query(
             "UPDATE productos SET stock = stock - $1 WHERE id = $2",
             [cantidad, ids[i]]
+        );
+
+        // 💾 GUARDAR DETALLE
+        await pool.query(
+            `INSERT INTO detalle_ventas 
+            (venta_id, producto_id, nombre, precio, cantidad)
+            VALUES ($1,$2,$3,$4,$5)`,
+            [ventaId, p.id, p.nombre, p.precio, cantidad]
         );
 
         detalles.push({
@@ -548,153 +572,137 @@ app.post('/ventas', async (req,res)=>{
             precio: p.precio,
             cantidad
         });
-
-        // 💾 GUARDAR DETALLE EN BD
-await pool.query(
-    `INSERT INTO detalle_ventas 
-    (venta_id, producto_id, nombre, precio, cantidad)
-    VALUES ($1,$2,$3,$4,$5)`,
-    [ventaId, p.id, p.nombre, p.precio, cantidad]
-);
     }
 
-// 🧾 CREAR VENTA EN BD (temporalmente en 0)
-const ventaResult = await pool.query(
-    "INSERT INTO ventas (total) VALUES ($1) RETURNING id",
-    [0]
-);
-
-const ventaId = ventaResult.rows[0].id;
-
+    // 💰 CALCULAR TOTAL
     let totalBoleta = 0;
     detalles.forEach(d=>{
         totalBoleta += d.precio * d.cantidad;
     });
 
-    // 🧾 ACTUALIZAR TOTAL DE LA VENTA
-await pool.query(
-    "UPDATE ventas SET total = $1 WHERE id = $2",
-    [totalBoleta, ventaId]
-);
-
     let subtotal = Math.round(totalBoleta / 1.19);
     let iva = totalBoleta - subtotal;
 
-let html = `
-<html>
-<head>
-<style>
-body {
-    font-family: monospace;
-    max-width: 300px;
-    margin:auto;
-    padding:10px;
-}
+    // 🧾 ACTUALIZAR TOTAL
+    await pool.query(
+        "UPDATE ventas SET total = $1 WHERE id = $2",
+        [totalBoleta, ventaId]
+    );
 
-h2, h3, p {
-    text-align:center;
-    margin:3px 0;
-}
+    // 🧾 HTML BOLETA TIPO TICKET
+    let html = `
+    <html>
+    <head>
+    <style>
+    body {
+        font-family: monospace;
+        max-width: 300px;
+        margin:auto;
+        padding:10px;
+    }
 
-hr {
-    border: none;
-    border-top: 1px dashed #000;
-    margin:8px 0;
-}
+    h2, h3, p {
+        text-align:center;
+        margin:3px 0;
+    }
 
-table {
-    width:100%;
-    border-collapse: collapse;
-    font-size:12px;
-}
+    hr {
+        border: none;
+        border-top: 1px dashed #000;
+        margin:8px 0;
+    }
 
-th, td {
-    padding:3px;
-}
+    table {
+        width:100%;
+        border-collapse: collapse;
+        font-size:12px;
+    }
 
-td.right {
-    text-align:right;
-}
+    th, td {
+        padding:3px;
+    }
 
-.totales p {
-    display:flex;
-    justify-content:space-between;
-    margin:2px 0;
-    font-size:13px;
-}
+    td.right {
+        text-align:right;
+    }
 
-.gracias {
-    text-align:center;
-    margin-top:10px;
-    font-size:13px;
-}
+    .totales p {
+        display:flex;
+        justify-content:space-between;
+        margin:2px 0;
+        font-size:13px;
+    }
 
-button {
-    width:100%;
-    margin-top:10px;
-}
+    .gracias {
+        text-align:center;
+        margin-top:10px;
+        font-size:13px;
+    }
 
-@media print {
-    button { display:none; }
-}
-</style>
-</head>
-<body>
+    button {
+        width:100%;
+        margin-top:10px;
+    }
 
-<h2>🔧 FERRETERÍA</h2>
-<p>RUT: 12.345.678-9</p>
-<p>Tel: +56 9 1234 5678</p>
-<p>Dirección: Calle Principal 123</p>
+    @media print {
+        button { display:none; }
+    }
+    </style>
+    </head>
+    <body>
 
-<hr>
+    <h2>🔧 FERRETERÍA LOS NOGALES</h2>
+    <p>Tel: +56 9 1234 5678</p>
+    <p>Dirección: Calle Principal 123</p>
 
-<h3>BOLETA N° ${ventaId}</h3>
-<p>${new Date().toLocaleString('es-CL')}</p>
-<p>Cliente: ${cliente}</p>
+    <hr>
 
-<hr>
+    <h3>BOLETA N° ${ventaId}</h3>
+    <p>${new Date().toLocaleString('es-CL')}</p>
 
-<table>
-<tr>
-    <th>Prod</th>
-    <th>Cant</th>
-    <th>Total</th>
-</tr>
-`;
+    <hr>
 
-detalles.forEach(d=>{
-    let totalFila = d.precio * d.cantidad;
-    html += `
+    <table>
     <tr>
-        <td>${d.nombre}</td>
-        <td class="right">${d.cantidad}</td>
-        <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
+        <th>Prod</th>
+        <th>Cant</th>
+        <th>Total</th>
     </tr>
     `;
-});
 
-html += `
-</table>
+    detalles.forEach(d=>{
+        let totalFila = d.precio * d.cantidad;
+        html += `
+        <tr>
+            <td>${d.nombre}</td>
+            <td class="right">${d.cantidad}</td>
+            <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
+        </tr>
+        `;
+    });
 
-<hr>
+    html += `
+    </table>
 
-<div class="totales">
-    <p><span>Subtotal</span><span>$${subtotal.toLocaleString('es-CL')}</span></p>
-    <p><span>IVA (19%)</span><span>$${iva.toLocaleString('es-CL')}</span></p>
-    <p><strong>Total</strong><strong>$${totalBoleta.toLocaleString('es-CL')}</strong></p>
-</div>
+    <hr>
 
-<hr>
+    <div class="totales">
+        <p><span>Subtotal</span><span>$${subtotal.toLocaleString('es-CL')}</span></p>
+        <p><span>IVA</span><span>$${iva.toLocaleString('es-CL')}</span></p>
+        <p><strong>Total</strong><strong>$${totalBoleta.toLocaleString('es-CL')}</strong></p>
+    </div>
 
-<div class="gracias">
-    ¡Gracias por su compra!
-</div>
+    <hr>
 
-<button onclick="window.print()">🖨 Imprimir</button>
+    <div class="gracias">
+        ¡Gracias por su compra!
+    </div>
 
-</body>
-</html>
-`;
+    <button onclick="window.print()">🖨 Imprimir</button>
+
+    </body>
+    </html>
+    `;
 
     res.send(html);
 });
