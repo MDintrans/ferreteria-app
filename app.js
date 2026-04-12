@@ -48,6 +48,34 @@ pool.connect()
     }
 })();
 
+// 🧾 TABLAS DE VENTAS
+(async () => {
+    try {
+        await pool.query(`
+        CREATE TABLE IF NOT EXISTS ventas (
+            id SERIAL PRIMARY KEY,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            total INTEGER
+        )
+        `);
+
+        await pool.query(`
+        CREATE TABLE IF NOT EXISTS detalle_ventas (
+            id SERIAL PRIMARY KEY,
+            venta_id INTEGER,
+            producto_id INTEGER,
+            nombre TEXT,
+            precio INTEGER,
+            cantidad INTEGER
+        )
+        `);
+
+        console.log("✅ Tablas de ventas listas");
+    } catch (err) {
+        console.error("❌ Error creando tablas de ventas:", err.message);
+    }
+})();
+
 // 🎨 ESTILO
 const estilo = `
 <style>
@@ -386,44 +414,108 @@ r.style.display=r.innerText.toLowerCase().includes(f)?"":"none";
 
 // 💰 POST ventas
 app.post('/ventas', async (req,res)=>{
-const ids = Array.isArray(req.body.producto_id)?req.body.producto_id:[req.body.producto_id];
-const cant = Array.isArray(req.body.cantidad)?req.body.cantidad:[req.body.cantidad];
+    const ids = Array.isArray(req.body.producto_id)?req.body.producto_id:[req.body.producto_id];
+    const cant = Array.isArray(req.body.cantidad)?req.body.cantidad:[req.body.cantidad];
 
-let detalles = [];
+    let detalles = [];
 
-for (let i = 0; i < ids.length; i++) {
-const { rows } = await pool.query("SELECT * FROM productos WHERE id = $1",[ids[i]]);
-const p = rows[0];
-if (!p) continue;
+    for (let i = 0; i < ids.length; i++) {
+        const { rows } = await pool.query("SELECT * FROM productos WHERE id = $1",[ids[i]]);
+        const p = rows[0];
+        if (!p) continue;
 
-let cantidad = parseInt(cant[i]);
-if(cantidad > p.stock) cantidad = p.stock;
+        let cantidad = parseInt(cant[i]);
+        if(cantidad > p.stock) cantidad = p.stock;
 
-await pool.query("UPDATE productos SET stock = stock - $1 WHERE id = $2",[cantidad, ids[i]]);
+        await pool.query(
+            "UPDATE productos SET stock = stock - $1 WHERE id = $2",
+            [cantidad, ids[i]]
+        );
 
-detalles.push({nombre: p.nombre, precio: p.precio, cantidad});
-}
+        detalles.push({
+            nombre: p.nombre,
+            precio: p.precio,
+            cantidad
+        });
+    }
 
-let totalBoleta = 0;
-detalles.forEach(d=>{ totalBoleta += d.precio*d.cantidad; });
+    let totalBoleta = 0;
+    detalles.forEach(d=>{
+        totalBoleta += d.precio * d.cantidad;
+    });
 
-let html = `
-<html>
-<body style="font-family: monospace; max-width: 400px; margin:auto;">
-<h2 style="text-align:center;">🔧 Ferretería</h2>
-<hr>
-<table width="100%">`;
+    let subtotal = Math.round(totalBoleta / 1.19);
+    let iva = totalBoleta - subtotal;
 
-detalles.forEach(d=>{
-html += `<tr><td>${d.nombre}</td><td>${d.cantidad}</td><td>$${d.precio}</td></tr>`;
-});
+    let html = `
+    <html>
+    <head>
+    <style>
+        body { font-family: monospace; max-width: 400px; margin:auto; }
+        h2,p { text-align:center; margin:2px; }
+        table { width:100%; border-collapse: collapse; margin-top:10px; }
+        th, td { padding:5px; }
+        td.right { text-align:right; }
+        .totales { margin-top:10px; }
+        .totales p { margin:2px 0; text-align:right; }
+        .mensaje { text-align:center; margin-top:15px; font-weight:bold; }
+        button { margin-top:10px; }
+        @media print { button { display:none; } }
+    </style>
+    </head>
+    <body>
 
-html += `</table>
-<p>Total: $${totalBoleta}</p>
-<button onclick="window.print()">Imprimir</button>
-</body></html>`;
+    <h2>🔧 Ferretería</h2>
+    <p>Tel: +56 9 1234 5678 | correo@ferreteria.cl</p>
+    <p>Dirección: Calle Principal 123, Ciudad</p>
 
-res.send(html);
+    <hr>
+
+    <h3>Boleta de Venta</h3>
+
+    <table>
+    <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio Un</th>
+        <th>Total</th>
+    </tr>
+    `;
+
+    detalles.forEach(d=>{
+        let totalFila = d.precio * d.cantidad;
+        html += `
+        <tr>
+            <td>${d.nombre}</td>
+            <td class="right">${d.cantidad}</td>
+            <td class="right">$${d.precio.toLocaleString('es-CL')}</td>
+            <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
+        </tr>
+        `;
+    });
+
+    html += `
+    </table>
+
+    <div class="totales">
+        <p><strong>Subtotal:</strong> $${subtotal.toLocaleString('es-CL')}</p>
+        <p><strong>IVA:</strong> $${iva.toLocaleString('es-CL')}</p>
+        <p><strong>Total:</strong> $${totalBoleta.toLocaleString('es-CL')}</p>
+    </div>
+
+    <div class="mensaje">
+        ¡Gracias por visitarnos!
+    </div>
+
+    <button onclick="window.print()">🖨 Imprimir Boleta</button>
+    <br><br>
+    <a href="/ventas">Nueva venta</a>
+
+    </body>
+    </html>
+    `;
+
+    res.send(html);
 });
 
 // CRUD
