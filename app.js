@@ -4,6 +4,13 @@ const session = require('express-session');
 
 const app = express();
 
+function getFechaChile() {
+    return new Date().toLocaleString('es-CL', {
+        timeZone: 'America/Santiago',
+        hour12: false
+    });
+}
+
 // 🔥 BODY
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -658,7 +665,7 @@ app.post('/ventas', async (req,res)=>{
     <hr>
 
     <h3>BOLETA N° ${ventaId}</h3>
-    <p>${new Date().toLocaleString('es-CL')}</p>
+    <p>${getFechaChile()}</p>
 
     <hr>
 
