@@ -727,10 +727,13 @@ app.post('/ventas', async (req,res)=>{
     </div>
 
     <button onclick="window.print()">🖨 Imprimir</button>
+<form method="POST" action="/crear-despacho">
+    <input type="hidden" name="venta_id" value="${ventaId}">
+    <button>🚚 Crear despacho</button>
+</form>
+
     <br><br>
-<a href="/ventas">
-    <button>🔙 Nueva venta</button>
-</a>
+<a href="/ventas"><button>🔙 Nueva venta</button></a>
 
     </body>
     </html>
@@ -865,6 +868,29 @@ app.post('/despacho/estado/:id', async (req,res)=>{
     await pool.query(
         "UPDATE despachos SET estado=$1 WHERE id=$2",
         [estado, req.params.id]
+    );
+
+    res.redirect('/despacho');
+});
+
+// 🚚 CREAR DESPACHO DESDE VENTA
+app.post('/crear-despacho', async (req,res)=>{
+
+    const { venta_id } = req.body;
+
+    // traer detalle de venta
+    const { rows } = await pool.query(
+        "SELECT nombre, cantidad FROM detalle_ventas WHERE venta_id = $1",
+        [venta_id]
+    );
+
+    // armar texto del pedido
+    let pedido = rows.map(p => `${p.nombre} x${p.cantidad}`).join(', ');
+
+    // guardar despacho
+    await pool.query(
+        "INSERT INTO despachos (pedido, estado) VALUES ($1,'Pendiente')",
+        [pedido]
     );
 
     res.redirect('/despacho');
