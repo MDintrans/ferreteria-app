@@ -156,6 +156,7 @@ app.get('/', (req, res) => {
             <a class="card" href="/inventario">📦 Productos</a>
             <a class="card" href="/productos">📊 Inventario</a>
             <a class="card" href="/ventas">💰 Ventas</a>
+            <a class="card" href="/reportes">📈 Reportes</a>
         </div>
     </div>
     </body></html>
@@ -410,6 +411,78 @@ r.style.display=r.innerText.toLowerCase().includes(f)?"":"none";
 </script>
 </body></html>
 `);
+});
+
+// 📈 REPORTES
+app.get('/reportes', async (req, res) => {
+
+    const ventasHoy = await pool.query(`
+        SELECT COUNT(*) as cantidad, COALESCE(SUM(total),0) as total
+        FROM ventas
+        WHERE DATE(fecha) = CURRENT_DATE
+    `);
+
+    const productosBajoStock = await pool.query(`
+        SELECT * FROM productos
+        WHERE stock < 5
+        ORDER BY stock ASC
+    `);
+
+    const ultimasVentas = await pool.query(`
+        SELECT * FROM ventas
+        ORDER BY fecha DESC
+        LIMIT 10
+    `);
+
+    let html = `
+    <html><head>${estilo}</head><body>
+    <div class="container">
+
+    <div class="topbar">
+        <h2>📈 Reportes</h2>
+        <a href="/" class="btn-volver">⬅ Volver</a>
+    </div>
+
+    <h3>💰 Ventas de Hoy</h3>
+    <p><strong>Cantidad:</strong> ${ventasHoy.rows[0].cantidad}</p>
+    <p><strong>Total:</strong> $${Number(ventasHoy.rows[0].total).toLocaleString('es-CL')}</p>
+
+    <h3>⚠️ Productos con Bajo Stock</h3>
+    <table>
+    <tr><th>Producto</th><th>Stock</th></tr>
+    `;
+
+    productosBajoStock.rows.forEach(p => {
+        html += `
+        <tr>
+            <td>${p.nombre}</td>
+            <td class="stock-bajo">${p.stock}</td>
+        </tr>`;
+    });
+
+    html += `</table>
+
+    <h3>🧾 Últimas Ventas</h3>
+    <table>
+    <tr><th>ID</th><th>Fecha</th><th>Total</th></tr>
+    `;
+
+    ultimasVentas.rows.forEach(v => {
+        html += `
+        <tr>
+            <td>${v.id}</td>
+            <td>${new Date(v.fecha).toLocaleString('es-CL')}</td>
+            <td>$${Number(v.total).toLocaleString('es-CL')}</td>
+        </tr>`;
+    });
+
+    html += `
+    </table>
+
+    </div></body></html>
+    `;
+
+    res.send(html);
 });
 
 // 💰 POST ventas
