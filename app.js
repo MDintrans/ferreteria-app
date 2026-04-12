@@ -165,7 +165,7 @@ app.get('/', (req, res) => {
 
 // 📦 INVENTARIO
 app.get('/inventario', async (req, res) => {
-    const { rows } = await pool.query("SELECT * FROM productos");
+    const { rows } = await pool.query("SELECT * FROM productos ORDER BY id ASC");
 
     let html = `
     <html><head>${estilo}</head><body>
