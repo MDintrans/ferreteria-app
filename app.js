@@ -161,6 +161,22 @@ tr:nth-child(even) { background:#f8fafc; }
 table td:nth-child(2), table th:nth-child(2) { text-align: left; padding-left: 15px; }
 .right { text-align:right; }
 .login-box { max-width:400px; margin:80px auto; background:white; padding:30px; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.08); text-align:center; }
+
+.estado-pendiente {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+.estado-ruta {
+    color: #ca8a04;
+    font-weight: bold;
+}
+
+.estado-entregado {
+    color: #16a34a;
+    font-weight: bold;
+}
+
 </style>
 `;
 
@@ -862,7 +878,13 @@ app.get('/despacho', async (req, res) => {
         </a>
     ` : 'Sin boleta'}
 </td>
-            <td>${d.estado}</td>
+            <td class="${
+    d.estado === 'Pendiente' ? 'estado-pendiente' :
+    d.estado === 'En ruta' ? 'estado-ruta' :
+    'estado-entregado'
+}">
+    ${d.estado}
+</td>
             <td>
     <form method="POST" action="/despacho/estado/${d.id}" style="display:inline;">
         <button>Cambiar</button>
