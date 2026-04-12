@@ -573,47 +573,9 @@ const ventasHoy = await pool.query(queryVentas, params);
     <a class="card" href="/reportes/stock">⚠️ Stock crítico</a>
 </div>
 
-    <h3>💰 ${
-    fecha ? `Ventas del día ${new Date(fecha).toLocaleDateString('es-CL')}` :
-    mes ? `Ventas del mes ${mes}` :
-    'Ventas de Hoy'
-}</h3>
-    <p><strong>Cantidad:</strong> ${ventasHoy.rows[0].cantidad}</p>
-    <p><strong>Total:</strong> $${Number(ventasHoy.rows[0].total).toLocaleString('es-CL')}</p>
-
-    <h3>⚠️ Productos con Bajo Stock</h3>
-    <table>
-    <tr><th>Producto</th><th>Stock</th></tr>
-    `;
-
-    productosBajoStock.rows.forEach(p => {
-        html += `
-        <tr>
-            <td>${p.nombre}</td>
-            <td class="stock-bajo">${p.stock}</td>
-        </tr>`;
-    });
-
-    html += `</table>
-
-    <h3>🧾 Últimas Ventas</h3>
-    <table>
-    <tr><th>ID</th><th>Fecha</th><th>Total</th></tr>
-    `;
-
-    ultimasVentas.rows.forEach(v => {
-        html += `
-        <tr>
-            <td>${v.id}</td>
-            <td>${new Date(v.fecha).toLocaleString('es-CL')}</td>
-            <td>$${Number(v.total).toLocaleString('es-CL')}</td>
-        </tr>`;
-    });
-
-    html += `
-    </table>
-
-    </div></body></html>
+    </div>
+    </body>
+    </html>
     `;
 
     res.send(html);
@@ -622,12 +584,32 @@ const ventasHoy = await pool.query(queryVentas, params);
 // 📋 DETALLE DE VENTAS
 app.get('/reportes/detalle', async (req,res)=>{
 
-    const { rows } = await pool.query(`
-        SELECT v.id, v.fecha, v.total
-        FROM ventas v
-        ORDER BY v.fecha DESC
-        LIMIT 50
-    `);
+    const { fecha, mes } = req.query;
+
+   let query = `
+    SELECT v.id, v.fecha, v.total
+    FROM ventas v
+    WHERE 1=1
+`;
+
+let params = [];
+
+// 📅 filtro por día
+if (fecha) {
+    params.push(fecha);
+    query += ` AND DATE(v.fecha) = $${params.length}`;
+}
+
+// 📆 filtro por mes
+if (mes) {
+    params.push(mes);
+    query += ` AND TO_CHAR(v.fecha, 'YYYY-MM') = $${params.length}`;
+}
+
+// orden final
+query += ` ORDER BY v.fecha DESC LIMIT 50`;
+
+const { rows } = await pool.query(query, params);
 
     let html = `
     <html><head>${estilo}</head><body>
@@ -635,6 +617,17 @@ app.get('/reportes/detalle', async (req,res)=>{
 
     <div class="topbar">
         <h2>📋 Detalle de ventas</h2>
+
+                <form method="GET" action="/reportes">
+    <label>📅 Día:</label>
+    <input type="date" name="fecha">
+
+    <label>📆 Mes:</label>
+    <input type="month" name="mes">
+
+    <button>Filtrar</button>
+</form>
+
         <a href="/reportes" class="btn-volver">⬅ Volver</a>
     </div>
 
