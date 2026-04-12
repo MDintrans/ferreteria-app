@@ -83,6 +83,26 @@ pool.connect()
     }
 })();
 
+// 🚚 TABLA DESPACHOS
+(async () => {
+    try {
+        await pool.query(`
+        CREATE TABLE IF NOT EXISTS despachos (
+            id SERIAL PRIMARY KEY,
+            cliente TEXT,
+            direccion TEXT,
+            pedido TEXT,
+            estado TEXT DEFAULT 'Pendiente',
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        `);
+
+        console.log("✅ Tabla despachos lista");
+    } catch (err) {
+        console.error("❌ Error despachos:", err.message);
+    }
+})();
+
 // 🎨 ESTILO
 const estilo = `
 <style>
@@ -170,6 +190,7 @@ app.get('/', (req, res) => {
             <a class="card" href="/productos">📊 Inventario</a>
             <a class="card" href="/ventas">💰 Ventas</a>
             <a class="card" href="/reportes">📈 Reportes</a>
+            <a class="card" href="/despacho">🚚 Despacho</a>
         </div>
     </div>
     </body></html>
@@ -758,6 +779,95 @@ await pool.query(
 [nombre,precio,stock,req.params.id]
 );
 res.redirect('/inventario');
+});
+
+// 🚚 DESPACHO
+app.get('/despacho', async (req, res) => {
+
+    const { rows } = await pool.query("SELECT * FROM despachos ORDER BY id DESC");
+
+    let html = `
+    <html><head>${estilo}</head><body>
+    <div class="container">
+
+    <div class="topbar">
+        <h2>🚚 Despacho</h2>
+        <a href="/" class="btn-volver">⬅ Volver</a>
+    </div>
+
+    <h3>Nuevo despacho</h3>
+    <form method="POST" action="/despacho">
+        <input name="cliente" placeholder="Cliente">
+        <input name="direccion" placeholder="Dirección">
+        <input name="pedido" placeholder="Detalle pedido">
+        <button>Guardar</button>
+    </form>
+
+    <table>
+    <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Dirección</th>
+        <th>Pedido</th>
+        <th>Estado</th>
+        <th>Acción</th>
+    </tr>
+    `;
+
+    rows.forEach(d => {
+        html += `
+        <tr>
+            <td>${d.id}</td>
+            <td>${d.cliente}</td>
+            <td>${d.direccion}</td>
+            <td>${d.pedido}</td>
+            <td>${d.estado}</td>
+            <td>
+                <form method="POST" action="/despacho/estado/${d.id}">
+                    <button>Cambiar</button>
+                </form>
+            </td>
+        </tr>`;
+    });
+
+    html += `
+    </table>
+    </div></body></html>
+    `;
+
+    res.send(html);
+});
+
+app.post('/despacho', async (req,res)=>{
+    const { cliente, direccion, pedido } = req.body;
+
+    await pool.query(
+        "INSERT INTO despachos (cliente, direccion, pedido) VALUES ($1,$2,$3)",
+        [cliente, direccion, pedido]
+    );
+
+    res.redirect('/despacho');
+});
+
+app.post('/despacho/estado/:id', async (req,res)=>{
+
+    const { rows } = await pool.query(
+        "SELECT estado FROM despachos WHERE id=$1",
+        [req.params.id]
+    );
+
+    let estado = rows[0].estado;
+
+    if (estado === "Pendiente") estado = "En ruta";
+    else if (estado === "En ruta") estado = "Entregado";
+    else estado = "Pendiente";
+
+    await pool.query(
+        "UPDATE despachos SET estado=$1 WHERE id=$2",
+        [estado, req.params.id]
+    );
+
+    res.redirect('/despacho');
 });
 
 // 🚀 SERVER
