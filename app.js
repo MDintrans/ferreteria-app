@@ -55,6 +55,20 @@ pool.connect()
     }
 })();
 
+// 🔗 COLUMNA venta_id EN DESPACHOS
+(async () => {
+    try {
+        await pool.query(`
+        ALTER TABLE despachos
+        ADD COLUMN IF NOT EXISTS venta_id INTEGER
+        `);
+
+        console.log("✅ Columna venta_id lista");
+    } catch (err) {
+        console.error("❌ Error venta_id:", err.message);
+    }
+})();
+
 // 🧾 TABLAS DE VENTAS
 (async () => {
     try {
@@ -841,7 +855,13 @@ app.get('/despacho', async (req, res) => {
             <td>${d.cliente}</td>
             <td>${d.direccion}</td>
             <td>${d.contacto || ''}</td>
-            <td>${d.pedido}</td>
+            <td>
+    ${d.venta_id ? `
+        <a href="/boleta/${d.venta_id}" target="_blank">
+            <button>🧾 Ver</button>
+        </a>
+    ` : 'Sin boleta'}
+</td>
             <td>${d.estado}</td>
             <td>
     <form method="POST" action="/despacho/estado/${d.id}" style="display:inline;">
@@ -911,8 +931,8 @@ app.post('/crear-despacho', async (req,res)=>{
 
     // guardar despacho
     await pool.query(
-        "INSERT INTO despachos (pedido, estado) VALUES ($1,'Pendiente')",
-        [pedido]
+        "INSERT INTO despachos (pedido, estado) VALUES ($1,$2,'Pendiente')"
+        [venta_id, pedido]
     );
 
     res.redirect('/despacho');
@@ -969,6 +989,49 @@ app.post('/despacho/editar/:id', async (req,res)=>{
     );
 
     res.redirect('/despacho');
+});
+
+// 🧾 VER BOLETA DESDE DESPACHO
+app.get('/boleta/:id', async (req,res)=>{
+
+    const ventaId = req.params.id;
+
+    const { rows } = await pool.query(
+        "SELECT * FROM detalle_ventas WHERE venta_id=$1",
+        [ventaId]
+    );
+
+    let total = 0;
+
+    let html = `
+    <html>
+    <body style="font-family: monospace; max-width:300px; margin:auto;">
+    
+    <h3 style="text-align:center;">Boleta N° ${ventaId}</h3>
+    <hr>
+    `;
+
+    rows.forEach(d=>{
+        let subtotal = d.precio * d.cantidad;
+        total += subtotal;
+
+        html += `
+        <p>${d.nombre} x${d.cantidad} - $${subtotal.toLocaleString('es-CL')}</p>
+        `;
+    });
+
+    html += `
+    <hr>
+    <p><strong>Total: $${total.toLocaleString('es-CL')}</strong></p>
+
+    <br>
+    <a href="/despacho">⬅ Volver</a>
+
+    </body>
+    </html>
+    `;
+
+    res.send(html);
 });
 
 // 🚀 SERVER
