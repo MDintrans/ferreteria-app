@@ -997,36 +997,133 @@ app.get('/boleta/:id', async (req,res)=>{
 
     const ventaId = req.params.id;
 
-    const { rows } = await pool.query(
+    // 🧾 TRAER DETALLE
+    const { rows: detalles } = await pool.query(
         "SELECT * FROM detalle_ventas WHERE venta_id=$1",
         [ventaId]
     );
 
-    let total = 0;
+    let totalBoleta = 0;
+
+    detalles.forEach(d=>{
+        totalBoleta += d.precio * d.cantidad;
+    });
+
+    let subtotal = Math.round(totalBoleta / 1.19);
+    let iva = totalBoleta - subtotal;
 
     let html = `
     <html>
-    <body style="font-family: monospace; max-width:300px; margin:auto;">
-    
-    <h3 style="text-align:center;">Boleta N° ${ventaId}</h3>
+    <head>
+    <style>
+    body {
+        font-family: monospace;
+        max-width: 300px;
+        margin:auto;
+        padding:10px;
+    }
+
+    h2, h3, p {
+        text-align:center;
+        margin:3px 0;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px dashed #000;
+        margin:8px 0;
+    }
+
+    table {
+        width:100%;
+        border-collapse: collapse;
+        font-size:12px;
+    }
+
+    th, td {
+        padding:3px;
+    }
+
+    td.right {
+        text-align:right;
+    }
+
+    .totales p {
+        display:flex;
+        justify-content:space-between;
+        margin:2px 0;
+        font-size:13px;
+    }
+
+    .gracias {
+        text-align:center;
+        margin-top:10px;
+        font-size:13px;
+    }
+
+    button {
+        width:100%;
+        margin-top:10px;
+    }
+
+    @media print {
+        button { display:none; }
+    }
+    </style>
+    </head>
+    <body>
+
+    <h2>🔧 FERRETERÍA</h2>
+    <p>Tel: +56 9 1234 5678</p>
+    <p>Dirección: Calle Principal 123</p>
+
     <hr>
+
+    <h3>BOLETA N° ${ventaId}</h3>
+    <p>${getFechaChile()}</p>
+
+    <hr>
+
+    <table>
+    <tr>
+        <th>Prod</th>
+        <th>Cant</th>
+        <th>Total</th>
+    </tr>
     `;
 
-    rows.forEach(d=>{
-        let subtotal = d.precio * d.cantidad;
-        total += subtotal;
-
+    detalles.forEach(d=>{
+        let totalFila = d.precio * d.cantidad;
         html += `
-        <p>${d.nombre} x${d.cantidad} - $${subtotal.toLocaleString('es-CL')}</p>
+        <tr>
+            <td>${d.nombre}</td>
+            <td class="right">${d.cantidad}</td>
+            <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
+        </tr>
         `;
     });
 
     html += `
-    <hr>
-    <p><strong>Total: $${total.toLocaleString('es-CL')}</strong></p>
+    </table>
 
-    <br>
-    <a href="/despacho">⬅ Volver</a>
+    <hr>
+
+    <div class="totales">
+        <p><span>Subtotal</span><span>$${subtotal.toLocaleString('es-CL')}</span></p>
+        <p><span>IVA</span><span>$${iva.toLocaleString('es-CL')}</span></p>
+        <p><strong>Total</strong><strong>$${totalBoleta.toLocaleString('es-CL')}</strong></p>
+    </div>
+
+    <hr>
+
+    <div class="gracias">
+        ¡Gracias por su compra!
+    </div>
+
+    <button onclick="window.print()">🖨 Imprimir</button>
+
+    <br><br>
+    <a href="/despacho"><button>⬅ Volver</button></a>
 
     </body>
     </html>
