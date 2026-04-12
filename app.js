@@ -103,6 +103,11 @@ pool.connect()
     }
 })();
 
+await pool.query(`
+ALTER TABLE despachos
+ADD COLUMN IF NOT EXISTS contacto TEXT
+`);
+
 // 🎨 ESTILO
 const estilo = `
 <style>
@@ -802,6 +807,7 @@ app.get('/despacho', async (req, res) => {
     <form method="POST" action="/despacho">
         <input name="cliente" placeholder="Cliente">
         <input name="direccion" placeholder="Dirección">
+        <input name="contacto" placeholder="Contacto">
         <input name="pedido" placeholder="Detalle pedido">
         <button>Guardar</button>
     </form>
@@ -846,7 +852,7 @@ app.get('/despacho', async (req, res) => {
 });
 
 app.post('/despacho', async (req,res)=>{
-    const { cliente, direccion, pedido } = req.body;
+    const { cliente, contacto, direccion, pedido } = req.body;
 
     await pool.query(
         "INSERT INTO despachos (cliente, direccion, pedido) VALUES ($1,$2,$3)",
