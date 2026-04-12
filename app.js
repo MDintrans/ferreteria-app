@@ -699,6 +699,10 @@ app.post('/ventas', async (req,res)=>{
     </div>
 
     <button onclick="window.print()">🖨 Imprimir</button>
+    <br><br>
+<a href="/ventas">
+    <button>🔙 Nueva venta</button>
+</a>
 
     </body>
     </html>
