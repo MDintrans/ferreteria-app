@@ -69,6 +69,20 @@ pool.connect()
     }
 })();
 
+// 📅 COLUMNA fecha_entrega EN DESPACHOS
+(async () => {
+    try {
+        await pool.query(`
+        ALTER TABLE despachos
+        ADD COLUMN IF NOT EXISTS fecha_entrega DATE
+        `);
+
+        console.log("✅ Columna fecha_entrega lista");
+    } catch (err) {
+        console.error("❌ Error fecha_entrega:", err.message);
+    }
+})();
+
 // 🧾 TABLAS DE VENTAS
 (async () => {
     try {
@@ -858,6 +872,7 @@ app.get('/despacho', async (req, res) => {
         <th>Cliente</th>
         <th>Dirección</th>
         <th>Contacto</th>
+        <th>Fecha Entrega</th>
         <th>Pedido</th>
         <th>Estado</th>
         <th>Acción</th>
@@ -871,6 +886,11 @@ app.get('/despacho', async (req, res) => {
             <td>${d.cliente}</td>
             <td>${d.direccion}</td>
             <td>${d.contacto || ''}</td>
+            <td>
+    ${d.fecha_entrega 
+        ? new Date(d.fecha_entrega).toLocaleDateString('es-CL') 
+        : '-'}
+</td>
             <td>
     ${d.venta_id ? `
         <a href="/boleta/${d.venta_id}" target="_blank">
@@ -906,10 +926,10 @@ app.get('/despacho', async (req, res) => {
 });
 
 app.post('/despacho', async (req,res)=>{
-    const { cliente, contacto, direccion, pedido } = req.body;
+    const { cliente, contacto, direccion, pedido, fecha_entrega } = req.body;
 
     await pool.query(
-        "INSERT INTO despachos (cliente, contacto, direccion, pedido) VALUES ($1,$2,$3,$4)",
+        "INSERT INTO despachos (cliente, contacto, direccion, pedido, fecha_entrega) VALUES ($1,$2,$3,$4,$5)",
         [cliente, contacto, direccion, pedido]
     );
 
@@ -985,6 +1005,7 @@ app.get('/despacho/editar/:id', async (req,res)=>{
         <input name="contacto" value="${d.contacto || ''}" placeholder="Contacto">
         <input name="direccion" value="${d.direccion || ''}" placeholder="Dirección">
         <input name="pedido" value="${d.pedido || ''}" placeholder="Pedido">
+        <input type="date" name="fecha_entrega" value="${d.fecha_entrega ? d.fecha_entrega.toISOString().split('T')[0] : ''}">
 
         <select name="estado">
             <option ${d.estado==='Pendiente'?'selected':''}>Pendiente</option>
@@ -1002,13 +1023,13 @@ app.get('/despacho/editar/:id', async (req,res)=>{
 // 💾 GUARDAR CAMBIOS
 app.post('/despacho/editar/:id', async (req,res)=>{
 
-    const { cliente, contacto, direccion, pedido, estado } = req.body;
+    const { cliente, contacto, direccion, pedido, estado, fecha_entrega } = req.body;
 
     await pool.query(
         `UPDATE despachos 
-        SET cliente=$1, contacto=$2, direccion=$3, pedido=$4, estado=$5 
-        WHERE id=$6`,
-        [cliente, contacto, direccion, pedido, estado, req.params.id]
+        SET cliente=$1, contacto=$2, direccion=$3, pedido=$4, estado=$5, fecha_entrega=$6
+        WHERE id=$7`,
+        [cliente, contacto, direccion, pedido, estado, fecha_entrega, req.params.id]
     );
 
     res.redirect('/despacho');
