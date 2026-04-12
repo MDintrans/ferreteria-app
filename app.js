@@ -817,6 +817,7 @@ app.get('/despacho', async (req, res) => {
         <th>ID</th>
         <th>Cliente</th>
         <th>Dirección</th>
+        <th>Contacto</th>
         <th>Pedido</th>
         <th>Estado</th>
         <th>Acción</th>
@@ -829,6 +830,7 @@ app.get('/despacho', async (req, res) => {
             <td>${d.id}</td>
             <td>${d.cliente}</td>
             <td>${d.direccion}</td>
+            <td>${d.contacto || ''}</td>
             <td>${d.pedido}</td>
             <td>${d.estado}</td>
             <td>
@@ -855,8 +857,8 @@ app.post('/despacho', async (req,res)=>{
     const { cliente, contacto, direccion, pedido } = req.body;
 
     await pool.query(
-        "INSERT INTO despachos (cliente, direccion, pedido) VALUES ($1,$2,$3)",
-        [cliente, direccion, pedido]
+        "INSERT INTO despachos (cliente, contacto, direccion, pedido) VALUES ($1,$2,$3,$4)",
+        [cliente, contacto, direccion, pedido]
     );
 
     res.redirect('/despacho');
@@ -927,6 +929,7 @@ app.get('/despacho/editar/:id', async (req,res)=>{
 
     <form method="POST">
         <input name="cliente" value="${d.cliente || ''}" placeholder="Cliente">
+        <input name="contacto" value="${d.contacto || ''}" placeholder="Contacto">
         <input name="direccion" value="${d.direccion || ''}" placeholder="Dirección">
         <input name="pedido" value="${d.pedido || ''}" placeholder="Pedido">
 
@@ -946,13 +949,13 @@ app.get('/despacho/editar/:id', async (req,res)=>{
 // 💾 GUARDAR CAMBIOS
 app.post('/despacho/editar/:id', async (req,res)=>{
 
-    const { cliente, direccion, pedido, estado } = req.body;
+    const { cliente, contacto, direccion, pedido, estado } = req.body;
 
     await pool.query(
         `UPDATE despachos 
-        SET cliente=$1, direccion=$2, pedido=$3, estado=$4 
-        WHERE id=$5`,
-        [cliente, direccion, pedido, estado, req.params.id]
+        SET cliente=$1, contacto=$2, direccion=$3, pedido=$4, estado=$5 
+        WHERE id=$6`,
+        [cliente, contacto, direccion, pedido, estado, req.params.id]
     );
 
     res.redirect('/despacho');
