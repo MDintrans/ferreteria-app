@@ -416,11 +416,34 @@ r.style.display=r.innerText.toLowerCase().includes(f)?"":"none";
 // 📈 REPORTES
 app.get('/reportes', async (req, res) => {
 
-    const ventasHoy = await pool.query(`
-        SELECT COUNT(*) as cantidad, COALESCE(SUM(total),0) as total
-        FROM ventas
-        WHERE DATE(fecha) = CURRENT_DATE
-    `);
+    const { fecha, mes } = req.query;
+
+    let queryVentas = `
+    SELECT COUNT(*) as cantidad, COALESCE(SUM(total),0) as total
+    FROM ventas
+    WHERE 1=1
+`;
+
+let params = [];
+
+// 📅 FILTRO POR DÍA
+if (fecha) {
+    params.push(fecha);
+    queryVentas += ` AND DATE(fecha) = $${params.length}`;
+}
+
+// 📆 FILTRO POR MES
+if (mes) {
+    params.push(mes);
+    queryVentas += ` AND TO_CHAR(fecha, 'YYYY-MM') = $${params.length}`;
+}
+
+// 🔥 SI NO HAY FILTRO → HOY
+if (!fecha && !mes) {
+    queryVentas += ` AND DATE(fecha) = CURRENT_DATE`;
+}
+
+const ventasHoy = await pool.query(queryVentas, params);
 
     const productosBajoStock = await pool.query(`
         SELECT * FROM productos
@@ -440,6 +463,15 @@ app.get('/reportes', async (req, res) => {
 
     <div class="topbar">
         <h2>📈 Reportes</h2>
+        <form method="GET" action="/reportes">
+    <label>📅 Día:</label>
+    <input type="date" name="fecha">
+
+    <label>📆 Mes:</label>
+    <input type="month" name="mes">
+
+    <button>Filtrar</button>
+</form>
         <a href="/" class="btn-volver">⬅ Volver</a>
     </div>
 
