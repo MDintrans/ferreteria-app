@@ -826,10 +826,14 @@ app.get('/despacho', async (req, res) => {
             <td>${d.pedido}</td>
             <td>${d.estado}</td>
             <td>
-                <form method="POST" action="/despacho/estado/${d.id}">
-                    <button>Cambiar</button>
-                </form>
-            </td>
+    <form method="POST" action="/despacho/estado/${d.id}" style="display:inline;">
+        <button>Cambiar</button>
+    </form>
+
+    <form method="GET" action="/despacho/editar/${d.id}" style="display:inline;">
+        <button>Editar</button>
+    </form>
+</td>
         </tr>`;
     });
 
@@ -891,6 +895,58 @@ app.post('/crear-despacho', async (req,res)=>{
     await pool.query(
         "INSERT INTO despachos (pedido, estado) VALUES ($1,'Pendiente')",
         [pedido]
+    );
+
+    res.redirect('/despacho');
+});
+
+// ✏️ EDITAR DESPACHO (FORMULARIO)
+app.get('/despacho/editar/:id', async (req,res)=>{
+
+    const { rows } = await pool.query(
+        "SELECT * FROM despachos WHERE id=$1",
+        [req.params.id]
+    );
+
+    const d = rows[0];
+
+    res.send(`
+    <html><head>${estilo}</head><body>
+    <div class="container">
+
+    <div class="topbar">
+        <h2>✏️ Editar despacho</h2>
+        <a href="/despacho" class="btn-volver">⬅ Volver</a>
+    </div>
+
+    <form method="POST">
+        <input name="cliente" value="${d.cliente || ''}" placeholder="Cliente">
+        <input name="direccion" value="${d.direccion || ''}" placeholder="Dirección">
+        <input name="pedido" value="${d.pedido || ''}" placeholder="Pedido">
+
+        <select name="estado">
+            <option ${d.estado==='Pendiente'?'selected':''}>Pendiente</option>
+            <option ${d.estado==='En ruta'?'selected':''}>En ruta</option>
+            <option ${d.estado==='Entregado'?'selected':''}>Entregado</option>
+        </select>
+
+        <button>Guardar cambios</button>
+    </form>
+
+    </div></body></html>
+    `);
+});
+
+// 💾 GUARDAR CAMBIOS
+app.post('/despacho/editar/:id', async (req,res)=>{
+
+    const { cliente, direccion, pedido, estado } = req.body;
+
+    await pool.query(
+        `UPDATE despachos 
+        SET cliente=$1, direccion=$2, pedido=$3, estado=$4 
+        WHERE id=$5`,
+        [cliente, direccion, pedido, estado, req.params.id]
     );
 
     res.redirect('/despacho');
