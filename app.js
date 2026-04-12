@@ -919,11 +919,12 @@ app.post('/despacho/estado/:id', async (req,res)=>{
 app.post('/crear-despacho', async (req,res)=>{
 
     const { venta_id } = req.body;
+    const ventaId = venta_id;
 
     // traer detalle de venta
     const { rows } = await pool.query(
         "SELECT nombre, cantidad FROM detalle_ventas WHERE venta_id = $1",
-        [venta_id]
+        [ventaId]
     );
 
     // armar texto del pedido
@@ -931,8 +932,8 @@ app.post('/crear-despacho', async (req,res)=>{
 
     // guardar despacho
     await pool.query(
-        "INSERT INTO despachos (pedido, estado) VALUES ($1,$2,'Pendiente')"
-        [venta_id, pedido]
+        "INSERT INTO despachos (venta_id, pedido, estado) VALUES ($1,$2,'Pendiente')",
+        [ventaId, pedido]
     );
 
     res.redirect('/despacho');
