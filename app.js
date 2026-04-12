@@ -82,7 +82,13 @@ const estilo = `
 body { margin:0; font-family: Arial; background:#f1f5f9; color:#1e293b; }
 .container { padding:25px; }
 h1 { text-align:center; }
-.grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:20px; }
+.grid {display:grid;grid-template-columns: repeat(3, 1fr);gap:20px;}
+/* 📱 celular */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
 .card { background:white; padding:30px; border-radius:15px; text-align:center; text-decoration:none; color:#1e293b; font-size:18px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.08); transition:0.2s; }
 .card:hover { transform:scale(1.05); }
 input { padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin:5px; }
