@@ -580,73 +580,121 @@ await pool.query(
     let subtotal = Math.round(totalBoleta / 1.19);
     let iva = totalBoleta - subtotal;
 
-    let html = `
-    <html>
-    <head>
-    <style>
-        body { font-family: monospace; max-width: 400px; margin:auto; }
-        h2,p { text-align:center; margin:2px; }
-        table { width:100%; border-collapse: collapse; margin-top:10px; }
-        th, td { padding:5px; }
-        td.right { text-align:right; }
-        .totales { margin-top:10px; }
-        .totales p { margin:2px 0; text-align:right; }
-        .mensaje { text-align:center; margin-top:15px; font-weight:bold; }
-        button { margin-top:10px; }
-        @media print { button { display:none; } }
-    </style>
-    </head>
-    <body>
+let html = `
+<html>
+<head>
+<style>
+body {
+    font-family: monospace;
+    max-width: 300px;
+    margin:auto;
+    padding:10px;
+}
 
-    <h2>🔧 Ferretería</h2>
-    <p>Tel: +56 9 1234 5678 | correo@ferreteria.cl</p>
-    <p>Dirección: Calle Principal 123, Ciudad</p>
+h2, h3, p {
+    text-align:center;
+    margin:3px 0;
+}
 
-    <hr>
+hr {
+    border: none;
+    border-top: 1px dashed #000;
+    margin:8px 0;
+}
 
-    <h3>Boleta de Venta</h3>
+table {
+    width:100%;
+    border-collapse: collapse;
+    font-size:12px;
+}
 
-    <table>
+th, td {
+    padding:3px;
+}
+
+td.right {
+    text-align:right;
+}
+
+.totales p {
+    display:flex;
+    justify-content:space-between;
+    margin:2px 0;
+    font-size:13px;
+}
+
+.gracias {
+    text-align:center;
+    margin-top:10px;
+    font-size:13px;
+}
+
+button {
+    width:100%;
+    margin-top:10px;
+}
+
+@media print {
+    button { display:none; }
+}
+</style>
+</head>
+<body>
+
+<h2>🔧 FERRETERÍA</h2>
+<p>RUT: 12.345.678-9</p>
+<p>Tel: +56 9 1234 5678</p>
+<p>Dirección: Calle Principal 123</p>
+
+<hr>
+
+<h3>BOLETA N° ${ventaId}</h3>
+<p>${new Date().toLocaleString('es-CL')}</p>
+<p>Cliente: ${cliente}</p>
+
+<hr>
+
+<table>
+<tr>
+    <th>Prod</th>
+    <th>Cant</th>
+    <th>Total</th>
+</tr>
+`;
+
+detalles.forEach(d=>{
+    let totalFila = d.precio * d.cantidad;
+    html += `
     <tr>
-        <th>Producto</th>
-        <th>Cantidad</th>
-        <th>Precio Un</th>
-        <th>Total</th>
+        <td>${d.nombre}</td>
+        <td class="right">${d.cantidad}</td>
+        <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
     </tr>
     `;
+});
 
-    detalles.forEach(d=>{
-        let totalFila = d.precio * d.cantidad;
-        html += `
-        <tr>
-            <td>${d.nombre}</td>
-            <td class="right">${d.cantidad}</td>
-            <td class="right">$${d.precio.toLocaleString('es-CL')}</td>
-            <td class="right">$${totalFila.toLocaleString('es-CL')}</td>
-        </tr>
-        `;
-    });
+html += `
+</table>
 
-    html += `
-    </table>
+<hr>
 
-    <div class="totales">
-        <p><strong>Subtotal:</strong> $${subtotal.toLocaleString('es-CL')}</p>
-        <p><strong>IVA:</strong> $${iva.toLocaleString('es-CL')}</p>
-        <p><strong>Total:</strong> $${totalBoleta.toLocaleString('es-CL')}</p>
-    </div>
+<div class="totales">
+    <p><span>Subtotal</span><span>$${subtotal.toLocaleString('es-CL')}</span></p>
+    <p><span>IVA (19%)</span><span>$${iva.toLocaleString('es-CL')}</span></p>
+    <p><strong>Total</strong><strong>$${totalBoleta.toLocaleString('es-CL')}</strong></p>
+</div>
 
-    <div class="mensaje">
-        ¡Gracias por visitarnos!
-    </div>
+<hr>
 
-    <button onclick="window.print()">🖨 Imprimir Boleta</button>
-    <br><br>
-    <a href="/ventas">Nueva venta</a>
+<div class="gracias">
+    ¡Gracias por su compra!
+</div>
 
-    </body>
-    </html>
-    `;
+<button onclick="window.print()">🖨 Imprimir</button>
+
+</body>
+</html>
+`;
 
     res.send(html);
 });
