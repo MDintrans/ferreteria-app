@@ -101,12 +101,22 @@ pool.connect()
     } catch (err) {
         console.error("❌ Error despachos:", err.message);
     }
+
+    
 })();
 
-await pool.query(`
-ALTER TABLE despachos
-ADD COLUMN IF NOT EXISTS contacto TEXT
-`);
+(async () => {
+    try {
+        await pool.query(`
+        ALTER TABLE despachos
+        ADD COLUMN IF NOT EXISTS contacto TEXT
+        `);
+
+        console.log("✅ Columna contacto lista");
+    } catch (err) {
+        console.error("❌ Error contacto:", err.message);
+    }
+})();
 
 // 🎨 ESTILO
 const estilo = `
