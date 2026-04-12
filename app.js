@@ -567,8 +567,17 @@ const ventasHoy = await pool.query(queryVentas, params);
 </form>
         <a href="/" class="btn-volver">⬅ Volver</a>
     </div>
+    <div class="grid" style="margin-bottom:20px;">
+    <a class="card" href="/reportes/detalle">📋 Detalle ventas</a>
+    <a class="card" href="/reportes/productos">🏆 Más vendidos</a>
+    <a class="card" href="/reportes/stock">⚠️ Stock crítico</a>
+</div>
 
-    <h3>💰 Ventas de Hoy</h3>
+    <h3>💰 ${
+    fecha ? `Ventas del día ${new Date(fecha).toLocaleDateString('es-CL')}` :
+    mes ? `Ventas del mes ${mes}` :
+    'Ventas de Hoy'
+}</h3>
     <p><strong>Cantidad:</strong> ${ventasHoy.rows[0].cantidad}</p>
     <p><strong>Total:</strong> $${Number(ventasHoy.rows[0].total).toLocaleString('es-CL')}</p>
 
@@ -606,6 +615,115 @@ const ventasHoy = await pool.query(queryVentas, params);
 
     </div></body></html>
     `;
+
+    res.send(html);
+});
+
+// 📋 DETALLE DE VENTAS
+app.get('/reportes/detalle', async (req,res)=>{
+
+    const { rows } = await pool.query(`
+        SELECT v.id, v.fecha, v.total
+        FROM ventas v
+        ORDER BY v.fecha DESC
+        LIMIT 50
+    `);
+
+    let html = `
+    <html><head>${estilo}</head><body>
+    <div class="container">
+
+    <div class="topbar">
+        <h2>📋 Detalle de ventas</h2>
+        <a href="/reportes" class="btn-volver">⬅ Volver</a>
+    </div>
+
+    <table>
+    <tr><th>ID</th><th>Fecha</th><th>Total</th></tr>
+    `;
+
+    rows.forEach(v=>{
+        html += `
+        <tr>
+            <td>${v.id}</td>
+            <td>${new Date(v.fecha).toLocaleString('es-CL')}</td>
+            <td>$${Number(v.total).toLocaleString('es-CL')}</td>
+        </tr>`;
+    });
+
+    html += `</table></div></body></html>`;
+
+    res.send(html);
+});
+
+// 🏆 MÁS VENDIDOS
+app.get('/reportes/productos', async (req,res)=>{
+
+    const { rows } = await pool.query(`
+        SELECT nombre, SUM(cantidad) as total_vendidos
+        FROM detalle_ventas
+        GROUP BY nombre
+        ORDER BY total_vendidos DESC
+        LIMIT 10
+    `);
+
+    let html = `
+    <html><head>${estilo}</head><body>
+    <div class="container">
+
+    <div class="topbar">
+        <h2>🏆 Más vendidos</h2>
+        <a href="/reportes" class="btn-volver">⬅ Volver</a>
+    </div>
+
+    <table>
+    <tr><th>Producto</th><th>Cantidad</th></tr>
+    `;
+
+    rows.forEach(r=>{
+        html += `
+        <tr>
+            <td>${r.nombre}</td>
+            <td>${r.total_vendidos}</td>
+        </tr>`;
+    });
+
+    html += `</table></div></body></html>`;
+
+    res.send(html);
+});
+
+// ⚠️ STOCK CRÍTICO
+app.get('/reportes/stock', async (req,res)=>{
+
+    const { rows } = await pool.query(`
+        SELECT * FROM productos
+        WHERE stock <= 5
+        ORDER BY stock ASC
+    `);
+
+    let html = `
+    <html><head>${estilo}</head><body>
+    <div class="container">
+
+    <div class="topbar">
+        <h2>⚠️ Stock crítico</h2>
+        <a href="/reportes" class="btn-volver">⬅ Volver</a>
+    </div>
+
+    <table>
+    <tr><th>Producto</th><th>Stock</th></tr>
+    `;
+
+    rows.forEach(p=>{
+        html += `
+        <tr>
+            <td>${p.nombre}</td>
+            <td class="stock-bajo">${p.stock}</td>
+        </tr>`;
+    });
+
+    html += `</table></div></body></html>`;
 
     res.send(html);
 });
