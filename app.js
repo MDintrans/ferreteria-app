@@ -974,6 +974,7 @@ app.get('/despacho', async (req, res) => {
         <input name="direccion" placeholder="Dirección">
         <input name="contacto" placeholder="Contacto">
         <input name="pedido" placeholder="Detalle pedido">
+        <input type="date" name="fecha_entrega">
         <button>Guardar</button>
     </form>
 
@@ -1041,7 +1042,7 @@ app.post('/despacho', async (req,res)=>{
 
     await pool.query(
         "INSERT INTO despachos (cliente, contacto, direccion, pedido, fecha_entrega) VALUES ($1,$2,$3,$4,$5)",
-        [cliente, contacto, direccion, pedido]
+        [cliente, contacto, direccion, pedido, fecha_entrega]
     );
 
     res.redirect('/despacho');
