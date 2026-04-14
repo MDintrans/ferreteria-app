@@ -989,7 +989,7 @@ app.get('/despacho', async (req, res) => {
     </div>
 
     <h3>Nuevo despacho</h3>
-    <form method="POST" action="/despacho">
+    <form method="POST" action="/despacho" onsubmit="setTimeout(()=>this.reset(),100)">
         <input name="cliente" placeholder="Cliente">
         <input name="direccion" placeholder="Dirección">
         <input name="contacto" placeholder="Contacto">
@@ -1184,7 +1184,7 @@ app.get('/proveedores', async (req, res) => {
     <input id="buscar" placeholder="Buscar proveedor...">
 
     <h3>Agregar proveedor</h3>
-    <form method="POST" action="/proveedores">
+    <form method="POST" action="/proveedores" onsubmit="setTimeout(()=>this.reset(),100)">
         <input name="nombre" placeholder="Nombre contacto">
         <input name="empresa" placeholder="Empresa">
         <input name="telefono" placeholder="Teléfono">
