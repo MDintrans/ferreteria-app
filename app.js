@@ -146,6 +146,25 @@ pool.connect()
     }
 })();
 
+// 🏢 TABLA PROVEEDORES
+(async () => {
+    try {
+        await pool.query(`
+        CREATE TABLE IF NOT EXISTS proveedores (
+            id SERIAL PRIMARY KEY,
+            nombre TEXT,
+            empresa TEXT,
+            telefono TEXT,
+            observacion TEXT
+        )
+        `);
+
+        console.log("✅ Tabla proveedores lista");
+    } catch (err) {
+        console.error("❌ Error proveedores:", err.message);
+    }
+})();
+
 // 🎨 ESTILO
 const estilo = `
 <style>
@@ -250,6 +269,7 @@ app.get('/', (req, res) => {
             <a class="card" href="/ventas">💰 Ventas</a>
             <a class="card" href="/reportes">📈 Reportes</a>
             <a class="card" href="/despacho">🚚 Despacho</a>
+            <a class="card" href="/proveedores">👷 Proveedores</a>
         </div>
     </div>
     </body></html>
@@ -1145,6 +1165,96 @@ app.post('/despacho/editar/:id', async (req,res)=>{
     );
 
     res.redirect('/despacho');
+});
+
+// 👷 PROVEEDORES
+app.get('/proveedores', async (req, res) => {
+
+    const { rows } = await pool.query("SELECT * FROM proveedores ORDER BY id DESC");
+
+    let html = `
+    <html><head>${estilo}</head><body>
+    <div class="container">
+
+    <div class="topbar">
+        <h2>👷 Proveedores</h2>
+        <a href="/" class="btn-volver">⬅ Volver</a>
+    </div>
+
+    <input id="buscar" placeholder="Buscar proveedor...">
+
+    <h3>Agregar proveedor</h3>
+    <form method="POST" action="/proveedores">
+        <input name="nombre" placeholder="Nombre contacto">
+        <input name="empresa" placeholder="Empresa">
+        <input name="telefono" placeholder="Teléfono">
+        <input name="observacion" placeholder="Observación">
+        <button>Guardar</button>
+    </form>
+
+    <table id="tabla">
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Empresa</th>
+        <th>Teléfono</th>
+        <th>Observación</th>
+        <th>Acción</th>
+    </tr>
+    `;
+
+    rows.forEach(p => {
+        html += `
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.nombre}</td>
+            <td>${p.empresa}</td>
+            <td>${p.telefono}</td>
+            <td>${p.observacion}</td>
+            <td>
+                <form method="POST" action="/proveedores/eliminar/${p.id}" style="display:inline;">
+                    <button style="background:#dc2626;">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        `;
+    });
+
+    html += `</table>
+
+    <script>
+    document.getElementById("buscar").onkeyup = function(){
+        let f = this.value.toLowerCase();
+        document.querySelectorAll("#tabla tr").forEach((r,i)=>{
+            if(i==0) return;
+            r.style.display = r.innerText.toLowerCase().includes(f) ? "" : "none";
+        });
+    };
+    </script>
+
+    </div></body></html>
+    `;
+
+    res.send(html);
+});
+
+// 💾 GUARDAR PROVEEDOR
+app.post('/proveedores', async (req, res) => {
+
+    const { nombre, empresa, telefono, observacion } = req.body;
+
+    await pool.query(
+        "INSERT INTO proveedores (nombre, empresa, telefono, observacion) VALUES ($1,$2,$3,$4)",
+        [nombre, empresa, telefono, observacion]
+    );
+
+    res.redirect('/proveedores');
+});
+
+// ❌ ELIMINAR PROVEEDOR
+app.post('/proveedores/eliminar/:id', async (req,res)=>{
+    await pool.query("DELETE FROM proveedores WHERE id=$1",[req.params.id]);
+    res.redirect('/proveedores');
 });
 
 // 🧾 VER BOLETA DESDE DESPACHO
