@@ -210,6 +210,16 @@ table td:nth-child(2), table th:nth-child(2) { text-align: left; padding-left: 1
     font-weight: bold;
 }
 
+.fila-total td {
+    border-top: 2px solid #1e293b;
+    padding-top: 10px;
+    font-size: 16px;
+}
+
+.fila-total td:last-child {
+    font-size: 18px;
+}
+
 </style>
 `;
 
@@ -664,10 +674,11 @@ app.get('/reportes/detalle', async (req,res)=>{
 
     // ✅ FILA TOTAL
     html += `
-    <tr>
-        <td colspan="2"><strong>TOTAL</strong></td>
-        <td><strong>$${totalGeneral.toLocaleString('es-CL')}</strong></td>
-    </tr>
+<tr class="fila-total">
+    <td></td>
+    <td class="right"><strong>TOTAL</strong></td>
+    <td class="right"><strong>$${totalGeneral.toLocaleString('es-CL')}</strong></td>
+</tr>
     `;
 
     html += `</table></div></body></html>`;
