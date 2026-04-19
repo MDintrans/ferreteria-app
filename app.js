@@ -598,30 +598,36 @@ app.get('/reportes/detalle', async (req,res)=>{
 
     const { fecha, mes } = req.query;
 
-   let query = `
+    let query = `
     SELECT v.id, v.fecha, v.total
     FROM ventas v
     WHERE 1=1
-`;
+    `;
 
-let params = [];
+    let params = [];
 
-// 📅 filtro por día
-if (fecha) {
-    params.push(fecha);
-    query += ` AND DATE(v.fecha) = $${params.length}`;
-}
+    // 📅 filtro por día
+    if (fecha) {
+        params.push(fecha);
+        query += ` AND DATE(v.fecha) = $${params.length}`;
+    }
 
-// 📆 filtro por mes
-if (mes) {
-    params.push(mes);
-    query += ` AND TO_CHAR(v.fecha, 'YYYY-MM') = $${params.length}`;
-}
+    // 📆 filtro por mes
+    if (mes) {
+        params.push(mes);
+        query += ` AND TO_CHAR(v.fecha, 'YYYY-MM') = $${params.length}`;
+    }
 
-// orden final
-query += ` ORDER BY v.fecha DESC LIMIT 50`;
+    // orden final
+    query += ` ORDER BY v.fecha DESC LIMIT 50`;
 
-const { rows } = await pool.query(query, params);
+    const { rows } = await pool.query(query, params);
+
+    // ✅ CALCULAR TOTAL
+    let totalGeneral = 0;
+    rows.forEach(v => {
+        totalGeneral += Number(v.total);
+    });
 
     let html = `
     <html><head>${estilo}</head><body>
@@ -630,15 +636,15 @@ const { rows } = await pool.query(query, params);
     <div class="topbar">
         <h2>📋 Detalle de ventas</h2>
 
-                <form method="GET" action="/reportes/detalle">
-    <label>📅 Día:</label>
-    <input type="date" name="fecha">
+        <form method="GET" action="/reportes/detalle">
+            <label>📅 Día:</label>
+            <input type="date" name="fecha" value="${fecha || ''}">
 
-    <label>📆 Mes:</label>
-    <input type="month" name="mes">
+            <label>📆 Mes:</label>
+            <input type="month" name="mes" value="${mes || ''}">
 
-    <button>Filtrar</button>
-</form>
+            <button>Filtrar</button>
+        </form>
 
         <a href="/reportes" class="btn-volver">⬅ Volver</a>
     </div>
@@ -655,6 +661,14 @@ const { rows } = await pool.query(query, params);
             <td>$${Number(v.total).toLocaleString('es-CL')}</td>
         </tr>`;
     });
+
+    // ✅ FILA TOTAL
+    html += `
+    <tr>
+        <td colspan="2"><strong>TOTAL</strong></td>
+        <td><strong>$${totalGeneral.toLocaleString('es-CL')}</strong></td>
+    </tr>
+    `;
 
     html += `</table></div></body></html>`;
 
