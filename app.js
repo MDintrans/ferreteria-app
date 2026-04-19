@@ -630,7 +630,7 @@ const { rows } = await pool.query(query, params);
     <div class="topbar">
         <h2>📋 Detalle de ventas</h2>
 
-                <form method="GET" action="/reportes">
+                <form method="GET" action="/reportes/detalle">
     <label>📅 Día:</label>
     <input type="date" name="fecha">
 
