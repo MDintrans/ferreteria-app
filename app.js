@@ -220,6 +220,17 @@ table td:nth-child(2), table th:nth-child(2) { text-align: left; padding-left: 1
     font-size: 18px;
 }
 
+.tabla-container {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.tabla-container th {
+    position: sticky;
+    top: 0;
+    background: #e2e8f0;
+    z-index: 2;
+}
 </style>
 `;
 
@@ -305,6 +316,7 @@ app.get('/inventario', async (req, res) => {
         <input name="stock" type="number" placeholder="Stock">
         <button>Agregar</button>
     </form>
+    <div class="tabla-container">
     <table id="tabla">
     <tr>
         <th>ID</th>
@@ -332,7 +344,7 @@ app.get('/inventario', async (req, res) => {
         </tr>`;
     });
 
-    html += `</table>
+    html += `</table></div>
     <script>
     document.getElementById("buscar").onkeyup = function(){
         let f = this.value.toLowerCase();
