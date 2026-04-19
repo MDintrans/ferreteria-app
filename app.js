@@ -574,19 +574,11 @@ const ventasHoy = await pool.query(queryVentas, params);
     <html><head>${estilo}</head><body>
     <div class="container">
 
-    <div class="topbar">
-        <h2>📈 Reportes</h2>
-        <form method="GET" action="/reportes">
-    <label>📅 Día:</label>
-    <input type="date" name="fecha">
+<div class="topbar">
+    <h2>📈 Reportes</h2>
+    <a href="/" class="btn-volver">⬅ Volver</a>
+</div>
 
-    <label>📆 Mes:</label>
-    <input type="month" name="mes">
-
-    <button>Filtrar</button>
-</form>
-        <a href="/" class="btn-volver">⬅ Volver</a>
-    </div>
     <div class="grid" style="margin-bottom:20px;">
     <a class="card" href="/reportes/detalle">📋 Detalle ventas</a>
     <a class="card" href="/reportes/productos">🏆 Más vendidos</a>
