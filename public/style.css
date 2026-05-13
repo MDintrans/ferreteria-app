@@ -44,6 +44,10 @@ body {
     background: var(--bg-main);
     border: 2px solid var(--border-color); /* Bordes gruesos */
     box-shadow: var(--shadow-hard);
+
+    position: sticky;
+    top: 10px; /* Deja un pequeño margen para que se vea flotando */
+    z-index: 100; /* Obliga a que pase por encima de las tablas y el contenido */
 }
 
 /* ==========================================================================
