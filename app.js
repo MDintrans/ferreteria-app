@@ -201,11 +201,13 @@ app.get('/inventario', async (req, res) => {
             <a href="/" class="btn-volver">⬅ Volver al Inicio</a>
         </header>
 
-        <section style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin-bottom: 20px;">
+        <section style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin-bottom: 20px; padding-bottom: 15px; position: sticky; top: 115px; z-index: 90; background: #f1f5f9;">
+            
             <div style="flex: 1; min-width: 250px;">
                 <input id="buscar" placeholder="🔍 Buscar producto..." style="width: 100%;">
             </div>
-            <div style="flex: 2; min-width: 300px; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+
+            <div style="flex: 2; min-width: 300px; background: #fff; padding: 15px; border-radius: 12px; border: 2px solid #1e293b; box-shadow: 4px 4px 0px #1e293b;">
                 <h4 style="margin: 0 0 10px 0;">+ Nuevo Producto</h4>
                 <form method="POST" action="/agregar" autocomplete="off" style="display: flex; gap: 10px; flex-wrap: wrap;" onsubmit="setTimeout(()=>this.reset(),100)">
                     <input name="nombre" placeholder="Nombre" required style="flex: 2; min-width: 120px;">
@@ -214,12 +216,19 @@ app.get('/inventario', async (req, res) => {
                     <button style="margin: 5px 0;">Añadir</button>
                 </form>
             </div>
+
         </section>
 
         <div class="tabla-container">
             <table id="tabla">
                 <thead>
-                    <tr><th>ID</th><th>Descripción</th><th>Precio Unit.</th><th>Stock</th><th>Acciones</th></tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Descripción</th>
+                        <th>Precio Unit.</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                    </tr>
                 </thead>
                 <tbody>${rowsHtml}</tbody>
             </table>
@@ -295,7 +304,7 @@ app.get('/productos', async (req, res) => {
             <h2>📊 Vista de Inventario</h2>
             <a href="/" class="btn-volver">⬅ Volver</a>
         </header>
-        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; padding-bottom: 15px; position: sticky; top: 115px; z-index: 90; background: #f1f5f9;"">
             <input id="buscar" placeholder="🔍 Buscar..." style="flex: 1; min-width: 200px;">
             <button onclick="excel()" style="background: #10b981;">📥 Exportar Excel</button>
         </div>
@@ -718,7 +727,7 @@ app.get('/despacho', async (req, res) => {
             <a href="/" class="btn-volver">⬅ Volver</a>
         </header>
 
-        <section style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+        <section style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;padding-bottom: 15px; position: sticky; top: 115px; z-index: 90; background: #f1f5f9;""">
             <h4 style="margin: 0 0 15px 0;">+ Registrar Nuevo Despacho Manual</h4>
             <form method="POST" action="/despacho" onsubmit="setTimeout(()=>this.reset(),100)" style="display:flex; flex-wrap:wrap; gap:10px; align-items: center;">
                 <input name="cliente" placeholder="Nombre del Cliente" required style="flex:1; min-width: 200px;">
@@ -838,7 +847,7 @@ app.get('/proveedores', async (req, res) => {
             <a href="/" class="btn-volver">⬅ Volver</a>
         </header>
 
-        <section style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+        <section style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;padding-bottom: 15px; position: sticky; top: 115px; z-index: 90; background: #f1f5f9;">
             <h4 style="margin: 0 0 15px 0;">+ Añadir Proveedor</h4>
             <form method="POST" action="/proveedores" onsubmit="setTimeout(()=>this.reset(),100)" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
                 <input name="nombre" placeholder="Nombre Contacto" required style="flex:1; min-width: 200px;">
