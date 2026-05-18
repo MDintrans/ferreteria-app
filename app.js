@@ -15,7 +15,7 @@ function getFechaChile() {
     });
 }
 
-function layout(title, content, scripts = '') {
+function layout(title, content, scripts = '', showSidebar = true) {
     return `
     <!DOCTYPE html>
     <html lang="es">
@@ -26,9 +26,37 @@ function layout(title, content, scripts = '') {
         <link rel="stylesheet" href="/style.css">
     </head>
     <body>
-        <main class="main-wrapper">
+
+        ${showSidebar ? `
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h3>FERRETERÍA</h3>
+                    <span>CENTRAL ERP</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="/">🏠 Inicio</a>
+                <a href="/inventario">📦 Inventario</a>
+                <a href="/productos">📊 Productos</a>
+                <a href="/ventas">💰 Ventas</a>
+                <a href="/reportes">📈 Reportes</a>
+                <a href="/despacho">🚚 Despachos</a>
+                <a href="/proveedores">👷 Proveedores</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="/logout">⛔ Cerrar sesión</a>
+            </div>
+        </aside>
+        ` : ''}
+
+        <main class="${showSidebar ? 'main-content' : 'main-wrapper'}">
             ${content}
         </main>
+
         ${scripts}
     </body>
     </html>`;
