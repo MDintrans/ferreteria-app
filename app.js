@@ -149,7 +149,7 @@ app.get('/login', (req, res) => {
             <button class="btn-primary" style="width: 100%;">Ingresar al Panel</button>
         </form>
     </div>`;
-    res.send(layout('Login', content));
+    res.send(layout('Login', content, '', false));
 });
 
 app.post('/login', (req, res) => {
