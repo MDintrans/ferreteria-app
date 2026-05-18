@@ -1309,6 +1309,71 @@ app.get('/cotizaciones/nueva', async (req, res) => {
     res.send(layout('Nueva Cotización', content, scripts));
 });
 
+app.post('/cotizaciones/nueva', async (req, res) => {
+    const { cliente, telefono, direccion, observacion } = req.body;
+
+    const ids = Array.isArray(req.body.producto_id)
+        ? req.body.producto_id
+        : [req.body.producto_id];
+
+    const cantidades = Array.isArray(req.body.cantidad)
+        ? req.body.cantidad
+        : [req.body.cantidad];
+
+    let total = 0;
+    let detalles = [];
+
+    const cotizacionResult = await pool.query(`
+        INSERT INTO cotizaciones 
+        (cliente, telefono, direccion, observacion, total)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id
+    `, [cliente, telefono, direccion, observacion, 0]);
+
+    const cotizacionId = cotizacionResult.rows[0].id;
+
+    for (let i = 0; i < ids.length; i++) {
+        const { rows } = await pool.query(
+            "SELECT * FROM productos WHERE id = $1",
+            [ids[i]]
+        );
+
+        const producto = rows[0];
+        if (!producto) continue;
+
+        const cantidad = parseInt(cantidades[i]) || 0;
+        const subtotal = Number(producto.precio) * cantidad;
+
+        total += subtotal;
+
+        detalles.push({
+            producto_id: producto.id,
+            nombre: producto.nombre,
+            precio: producto.precio,
+            cantidad
+        });
+
+        await pool.query(`
+            INSERT INTO detalle_cotizaciones
+            (cotizacion_id, producto_id, nombre, precio, cantidad)
+            VALUES ($1, $2, $3, $4, $5)
+        `, [
+            cotizacionId,
+            producto.id,
+            producto.nombre,
+            producto.precio,
+            cantidad
+        ]);
+    }
+
+    await pool.query(
+        "UPDATE cotizaciones SET total = $1 WHERE id = $2",
+        [total, cotizacionId]
+    );
+
+    res.redirect(`/cotizacion/${cotizacionId}`);
+});
+
 // ---------------------------------------------------------
 // 📈 REPORTES
 // ---------------------------------------------------------
