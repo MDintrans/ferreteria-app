@@ -853,3 +853,121 @@ select:focus{
     color:#111827;
     transform:none;
 }
+
+/* =========================================================
+   SIDEBAR PREMIUM AJUSTES
+========================================================= */
+
+.sidebar{
+    width:235px;
+    padding:24px 18px;
+}
+
+.main-content{
+    margin-left:235px;
+}
+
+.sidebar-brand{
+    margin-bottom:34px;
+}
+
+.sidebar-logo{
+    box-shadow:
+    0 10px 25px rgba(250,204,21,.28);
+}
+
+.sidebar-nav{
+    gap:6px;
+}
+
+.sidebar-nav a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    position:relative;
+    overflow:hidden;
+}
+
+.sidebar-nav a::before{
+    content:'';
+    position:absolute;
+    left:0;
+    top:50%;
+    transform:translateY(-50%);
+    width:4px;
+    height:0;
+    border-radius:999px;
+    background:#facc15;
+    transition:height .2s ease;
+}
+
+.sidebar-nav a:hover::before{
+    height:55%;
+}
+
+.sidebar-nav a.active::before{
+    height:65%;
+    background:#111827;
+}
+
+.sidebar-nav a.active{
+    transform:none;
+}
+
+.sidebar-nav a:hover{
+    background:rgba(250,204,21,.10);
+}
+
+.sidebar-nav a.active:hover{
+    background:#facc15;
+}
+
+.sidebar-bottom a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.sidebar-bottom{
+    margin-bottom:4px;
+}
+
+/* Separador visual entre marca y menú */
+.sidebar::after{
+    content:'';
+    position:absolute;
+    left:18px;
+    right:18px;
+    top:108px;
+    height:1px;
+    background:rgba(255,255,255,.08);
+}
+
+/* Ajuste responsive premium */
+@media(max-width:900px){
+    .sidebar{
+        width:76px;
+    }
+
+    .main-content{
+        margin-left:76px;
+    }
+
+    .sidebar-brand{
+        justify-content:center;
+    }
+
+    .sidebar-logo{
+        width:44px;
+        height:44px;
+    }
+
+    .sidebar-nav a{
+        justify-content:center;
+        padding:14px 10px;
+    }
+
+    .sidebar-bottom a{
+        justify-content:center;
+    }
+}
