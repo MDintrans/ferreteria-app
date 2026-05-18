@@ -33,7 +33,7 @@ function layout(title, content, scripts = '', showSidebar = true) {
                 <div class="sidebar-logo">⚙️</div>
                 <div>
                     <h3>FERRETERÍA</h3>
-                    <span>CENTRAL ERP</span>
+                    <span>Sistema ERP</span>
                 </div>
             </div>
 
@@ -225,8 +225,8 @@ const { rows: ultimasVentas } = await pool.query(`
 
         <header class="topbar">
             <div class="brand">
-                <h1>🔧 Ferretería Central</h1>
-                <p>Dashboard Gerencial · Panel de Administración</p>
+                <h1>🔧 Ferretería Los Nogales</h1>
+                <p>· Panel de Administración</p>
             </div>
             <a href="/logout" class="btn-volver">Cerrar sesión</a>
         </header>
