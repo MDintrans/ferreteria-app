@@ -1342,3 +1342,34 @@ select:focus{
 .tabla-container::-webkit-scrollbar-thumb:hover{
     background:#94a3b8;
 }
+
+/* =========================================================
+   PRODUCTOS - TOOLBAR CONSULTA
+========================================================= */
+
+.productos-toolbar{
+    display:flex;
+    gap:14px;
+    align-items:center;
+}
+
+.productos-toolbar input{
+    flex:1;
+}
+
+.btn-exportar{
+    background:#16a34a;
+    color:white;
+    white-space:nowrap;
+}
+
+.btn-exportar:hover{
+    background:#15803d;
+}
+
+@media(max-width:700px){
+    .productos-toolbar{
+        flex-direction:column;
+        align-items:stretch;
+    }
+}

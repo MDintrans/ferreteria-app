@@ -356,7 +356,7 @@ app.get('/inventario', async (req, res) => {
                 <h2>📦 Gestión de Productos</h2>
                 <p>Administra productos, precios y stock disponible.</p>
             </div>
-            <a href="/" class="btn-volver">Volver al Dashboard</a>
+            <a href="/" class="btn-volver">Volver al Inicio</a>
         </header>
 
         <section class="module-toolbar">
@@ -446,55 +446,80 @@ app.post('/editar/:id', async (req,res)=>{
 });
 
 app.get('/productos', async (req, res) => {
-    const { rows } = await pool.query("SELECT * FROM productos");
-    
+    const { rows } = await pool.query("SELECT * FROM productos ORDER BY id ASC");
+
     let rowsHtml = rows.map(p => `
         <tr>
-            <td>${p.id}</td><td>${p.nombre}</td>
-            <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
+            <td><strong>#${p.id}</strong></td>
+            <td>${p.nombre}</td>
+            <td class="text-price">$${Number(p.precio).toLocaleString('es-CL')}</td>
             <td>
-    <span class="${
-        p.stock <= 5 
-            ? 'stock-badge stock-critico' 
-            : p.stock <= 15 
-                ? 'stock-badge stock-medio' 
-                : 'stock-badge stock-sano'
-    }">
-        ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Sano'} · ${p.stock}
-    </span>
-</td>
+                <span class="${
+                    p.stock <= 5 
+                        ? 'stock-badge stock-critico' 
+                        : p.stock <= 15 
+                            ? 'stock-badge stock-medio' 
+                            : 'stock-badge stock-sano'
+                }">
+                    ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Sano'} · ${p.stock}
+                </span>
+            </td>
         </tr>`).join('');
 
     const content = `
     <div class="container">
-        <header class="topbar">
-            <h2>📊 Vista de Inventario</h2>
-            <a href="/" class="btn-volver">⬅ Volver</a>
+
+        <header class="module-header">
+            <div>
+                <h2>📊 Vista de Inventario</h2>
+                <p>Consulta rápida de productos, precios y estado de stock.</p>
+            </div>
+            <a href="/" class="btn-volver">Volver al Dashboard</a>
         </header>
-        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; padding-bottom: 15px; position: sticky; top: 115px; z-index: 90; background: #f1f5f9;"">
-            <input id="buscar" placeholder="🔍 Buscar..." style="flex: 1; min-width: 200px;">
-            <button onclick="excel()" style="background: #10b981;">📥 Exportar Excel</button>
-        </div>
+
+        <section class="module-toolbar">
+            <div class="productos-toolbar">
+                <input id="buscar" placeholder="🔍 Buscar producto por nombre, precio o stock...">
+                <button onclick="excel()" class="btn-exportar">📥 Exportar Excel</button>
+            </div>
+        </section>
+
         <div class="tabla-container">
             <table id="tabla">
-                <thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Estado Stock</th>
+                    </tr>
+                </thead>
                 <tbody>${rowsHtml}</tbody>
             </table>
         </div>
+
     </div>`;
 
     const scripts = `
     <script>
         document.getElementById("buscar").onkeyup = function(){
             let f = this.value.toLowerCase();
+
             document.querySelectorAll("#tabla tbody tr").forEach(r => {
                 r.style.display = r.innerText.toLowerCase().includes(f) ? "" : "none";
             });
         };
+
         function excel(){
-            let blob = new Blob([document.getElementById("tabla").outerHTML], {type:"application/vnd.ms-excel"});
+            let blob = new Blob(
+                [document.getElementById("tabla").outerHTML],
+                {type:"application/vnd.ms-excel"}
+            );
+
             let a = document.createElement("a");
-            a.href = URL.createObjectURL(blob); a.download = "inventario.xls"; a.click();
+            a.href = URL.createObjectURL(blob);
+            a.download = "inventario.xls";
+            a.click();
         }
     </script>`;
 
