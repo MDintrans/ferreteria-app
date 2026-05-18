@@ -259,7 +259,7 @@ const { rows: ultimasVentas } = await pool.query(`
 
 <section class="dashboard-panel">
 
-    <div class="panel-card">
+    <div class="panel-card stock">
         <div class="panel-header">
             <h3>⚠️ Stock Crítico</h3>
             <a href="/reportes/stock">Ver todos</a>
@@ -275,7 +275,7 @@ const { rows: ultimasVentas } = await pool.query(`
         </div>
     </div>
 
-    <div class="panel-card">
+    <div class="panel-card despacho">
         <div class="panel-header">
             <h3>🚚 Despachos Pendientes</h3>
             <a href="/despacho">Ver despachos</a>
@@ -291,7 +291,7 @@ const { rows: ultimasVentas } = await pool.query(`
         </div>
     </div>
 
-    <div class="panel-card">
+    <div class="panel-card ventas">
         <div class="panel-header">
             <h3>💰 Últimas Ventas</h3>
             <a href="/reportes/detalle">Ver ventas</a>

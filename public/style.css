@@ -1076,3 +1076,62 @@ select:focus{
     color:#6b7280;
     font-size:13px;
 }
+
+/* =========================================================
+   SCROLL ELEGANTE PANEL HOME
+========================================================= */
+
+.panel-card{
+    min-height:320px;
+    display:flex;
+    flex-direction:column;
+}
+
+.mini-list{
+    margin-top:14px;
+
+    max-height:260px;
+
+    overflow-y:auto;
+
+    padding-right:4px;
+}
+
+/* Scroll elegante */
+
+.mini-list::-webkit-scrollbar{
+    width:8px;
+}
+
+.mini-list::-webkit-scrollbar-track{
+    background:transparent;
+}
+
+.mini-list::-webkit-scrollbar-thumb{
+    background:#d1d5db;
+    border-radius:999px;
+}
+
+.mini-list::-webkit-scrollbar-thumb:hover{
+    background:#9ca3af;
+}
+
+/* Items más compactos */
+
+.mini-row{
+    min-height:48px;
+}
+
+/* Paneles con diferentes colores */
+
+.panel-card.stock::before{
+    background:#ef4444;
+}
+
+.panel-card.despacho::before{
+    background:#3b82f6;
+}
+
+.panel-card.ventas::before{
+    background:#22c55e;
+}
