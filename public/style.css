@@ -626,3 +626,213 @@ select:focus{
         grid-template-columns:1fr;
     }
 }
+
+/* =========================================================
+   SIDEBAR ERP
+========================================================= */
+
+.sidebar{
+
+    position:fixed;
+
+    left:0;
+    top:0;
+
+    width:250px;
+    height:100vh;
+
+    background:
+    linear-gradient(
+    180deg,
+    #111827 0%,
+    #0f172a 100%
+    );
+
+    color:white;
+
+    padding:26px 20px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    z-index:1000;
+
+    box-shadow:
+    8px 0 30px rgba(0,0,0,.08);
+}
+
+.sidebar-brand{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    margin-bottom:40px;
+
+    padding-bottom:24px;
+
+    border-bottom:
+    1px solid rgba(255,255,255,.08);
+}
+
+.sidebar-logo{
+
+    width:46px;
+    height:46px;
+
+    border-radius:14px;
+
+    background:#facc15;
+
+    color:#111827;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    font-size:22px;
+
+    font-weight:900;
+}
+
+.sidebar-brand h3{
+
+    font-size:16px;
+
+    font-weight:800;
+
+    margin-bottom:2px;
+
+    color:white;
+}
+
+.sidebar-brand span{
+
+    font-size:12px;
+
+    color:#94a3b8;
+}
+
+.sidebar-nav{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+}
+
+.sidebar-nav a{
+
+    color:#cbd5e1;
+
+    text-decoration:none;
+
+    padding:14px 16px;
+
+    border-radius:14px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    transition:all .2s ease;
+}
+
+.sidebar-nav a:hover{
+
+    background:
+    rgba(250,204,21,.12);
+
+    color:white;
+
+    transform:translateX(4px);
+}
+
+.sidebar-bottom{
+
+    margin-top:auto;
+
+    padding-top:24px;
+
+    border-top:
+    1px solid rgba(255,255,255,.08);
+}
+
+.sidebar-bottom a{
+
+    display:block;
+
+    text-decoration:none;
+
+    color:#fca5a5;
+
+    font-weight:700;
+
+    padding:14px 16px;
+
+    border-radius:14px;
+
+    transition:all .2s ease;
+}
+
+.sidebar-bottom a:hover{
+
+    background:
+    rgba(239,68,68,.12);
+}
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.main-content{
+
+    margin-left:250px;
+
+    min-height:100vh;
+}
+
+/* =========================================================
+   LOGIN SIN SIDEBAR
+========================================================= */
+
+.main-wrapper{
+
+    min-height:100vh;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+    .sidebar{
+
+        width:78px;
+
+        padding:20px 12px;
+    }
+
+    .sidebar-brand div,
+    .sidebar-nav a span,
+    .sidebar-bottom a span{
+
+        display:none;
+    }
+
+    .main-content{
+
+        margin-left:78px;
+    }
+
+    .sidebar-nav a{
+
+        text-align:center;
+    }
+}
