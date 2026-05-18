@@ -536,51 +536,51 @@ app.get('/ventas', async (req, res) => {
         "SELECT * FROM productos WHERE stock > 0 ORDER BY nombre ASC"
     );
 
-    const productosHtml = productos.map(p => `
+const productosHtml = productos.map(p => `
 
-        <div class="pos-producto"
-             onclick='seleccionar(
-                ${p.id},
-                ${JSON.stringify(p.nombre)},
-                ${p.precio},
-                ${p.stock}
-             )'>
+    <div class="pos-row"
+         onclick='seleccionar(
+            ${p.id},
+            ${JSON.stringify(p.nombre)},
+            ${p.precio},
+            ${p.stock}
+         )'>
 
-            <div class="pos-producto-info">
+        <div class="pos-row-info">
 
-                <h4>${p.nombre}</h4>
+            <strong>${p.nombre}</strong>
 
-                <span class="${
+            <span class="${
+                p.stock <= 5
+                    ? 'stock-badge stock-critico'
+                    : p.stock <= 15
+                        ? 'stock-badge stock-medio'
+                        : 'stock-badge stock-sano'
+            }">
+
+                ${
                     p.stock <= 5
-                        ? 'stock-badge stock-critico'
+                        ? 'Crítico'
                         : p.stock <= 15
-                            ? 'stock-badge stock-medio'
-                            : 'stock-badge stock-sano'
-                }">
+                            ? 'Bajo'
+                            : 'Disponible'
+                } · ${p.stock}
 
-                    ${
-                        p.stock <= 5
-                            ? 'Crítico'
-                            : p.stock <= 15
-                                ? 'Bajo'
-                                : 'Disponible'
-                    } · ${p.stock}
-
-                </span>
-
-            </div>
-
-            <div class="pos-producto-footer">
-
-                <strong>
-                    $${Number(p.precio).toLocaleString('es-CL')}
-                </strong>
-
-            </div>
+            </span>
 
         </div>
 
-    `).join('');
+        <div class="pos-row-price">
+            $${Number(p.precio).toLocaleString('es-CL')}
+        </div>
+
+        <button class="btn-pos-add">
+            + Agregar
+        </button>
+
+    </div>
+
+`).join('');
 
     const content = `
 

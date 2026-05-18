@@ -1616,3 +1616,79 @@ select:focus{
 .pos-producto .stock-badge{
     min-width:100%;
 }
+
+/* =========================================================
+   POS LISTA COMPACTA
+========================================================= */
+
+.pos-grid{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    max-height:620px;
+    overflow-y:auto;
+    padding-right:6px;
+}
+
+.pos-row{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:14px 16px;
+
+    display:grid;
+    grid-template-columns:1.5fr 140px 130px;
+    align-items:center;
+    gap:16px;
+
+    transition:all .18s ease;
+    cursor:pointer;
+}
+
+.pos-row:hover{
+    background:#fffbeb;
+    border-color:#facc15;
+    transform:translateX(2px);
+}
+
+.pos-row-info{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.pos-row-info strong{
+    font-size:15px;
+    color:#111827;
+}
+
+.pos-row-price{
+    font-size:20px;
+    font-weight:900;
+    color:#111827;
+}
+
+.btn-pos-add{
+    background:#facc15;
+    color:#111827;
+    border:none;
+    border-radius:12px;
+    padding:12px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+.btn-pos-add:hover{
+    background:#eab308;
+}
+
+@media(max-width:900px){
+
+    .pos-row{
+        grid-template-columns:1fr;
+    }
+
+    .pos-row-price{
+        font-size:18px;
+    }
+}
