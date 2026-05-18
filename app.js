@@ -1071,6 +1071,243 @@ app.get('/cotizaciones', async (req, res) => {
     res.send(layout('Cotizaciones', content));
 });
 
+app.get('/cotizaciones/nueva', async (req, res) => {
+    const { rows: productos } = await pool.query(`
+        SELECT * FROM productos 
+        WHERE stock > 0 
+        ORDER BY nombre ASC
+    `);
+
+    const productosHtml = productos.map(p => `
+        <div class="pos-row"
+             onclick='seleccionarProducto(${p.id}, ${JSON.stringify(p.nombre)}, ${p.precio}, ${p.stock})'>
+
+            <div class="pos-row-info">
+                <strong>${p.nombre}</strong>
+            </div>
+
+            <span class="${
+                p.stock <= 5
+                    ? 'stock-badge stock-critico'
+                    : p.stock <= 15
+                        ? 'stock-badge stock-medio'
+                        : 'stock-badge stock-sano'
+            }">
+                ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Disponible'} · ${p.stock}
+            </span>
+
+            <div class="pos-row-price">
+                $${Number(p.precio).toLocaleString('es-CL')}
+            </div>
+
+            <button class="btn-pos-add" type="button">
+                Agregar
+            </button>
+        </div>
+    `).join('');
+
+    const content = `
+    <div class="container">
+
+        <header class="module-header">
+            <div>
+                <h2>🧾 Nueva Cotización</h2>
+                <p>Selecciona productos, cantidades y datos del cliente.</p>
+            </div>
+            <a href="/cotizaciones" class="btn-volver">Volver a Cotizaciones</a>
+        </header>
+
+        <section class="module-toolbar">
+            <h4>Datos del Cliente</h4>
+
+            <div class="cotizacion-cliente-form">
+                <input id="cliente" placeholder="Nombre del cliente" required>
+                <input id="telefono" placeholder="Teléfono">
+                <input id="direccion" placeholder="Dirección">
+                <input id="observacion" placeholder="Observación / condiciones">
+            </div>
+        </section>
+
+        <section class="pos-layout">
+
+            <div class="pos-left">
+
+                <div class="module-toolbar">
+                    <div class="productos-toolbar">
+                        <input id="buscarCotProducto" placeholder="🔍 Buscar producto para cotizar...">
+                    </div>
+                </div>
+
+                <div class="pos-grid">
+                    ${productosHtml}
+                </div>
+
+            </div>
+
+            <aside class="pos-right">
+
+                <div class="pos-cart">
+
+                    <div class="pos-cart-header">
+                        <h3>🧾 Detalle Cotización</h3>
+                    </div>
+
+                    <div class="pos-selector">
+                        <input id="productoNombre" disabled placeholder="Producto">
+                        <input id="productoPrecio" disabled placeholder="Precio">
+                        <input id="productoCantidad" type="number" min="1" placeholder="Cant.">
+                        <button onclick="agregarACotizacion()">Añadir</button>
+                    </div>
+
+                    <div class="carrito-items">
+                        <table id="tablaCotizacion">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cant.</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <div class="pos-total">
+                        <span>Total</span>
+                        <strong id="totalCotizacion">$0</strong>
+                    </div>
+
+                    <button class="btn-finalizar" onclick="guardarCotizacion()">
+                        Guardar Cotización
+                    </button>
+
+                </div>
+
+            </aside>
+
+        </section>
+
+    </div>`;
+
+    const scripts = `
+    <script>
+        let itemsCotizacion = [];
+        let productoSeleccionado = null;
+
+        function seleccionarProducto(id, nombre, precio, stock){
+            productoSeleccionado = { id, nombre, precio, stock };
+
+            document.getElementById("productoNombre").value = nombre;
+            document.getElementById("productoPrecio").value = "$" + precio.toLocaleString('es-CL');
+            document.getElementById("productoCantidad").value = 1;
+        }
+
+        function agregarACotizacion(){
+            const cantidad = parseInt(document.getElementById("productoCantidad").value) || 0;
+
+            if(!productoSeleccionado) return alert("Selecciona un producto");
+            if(cantidad <= 0) return alert("Cantidad inválida");
+
+            const existente = itemsCotizacion.find(p => p.id === productoSeleccionado.id);
+
+            if(existente){
+                existente.cantidad += cantidad;
+            } else {
+                itemsCotizacion.push({
+                    ...productoSeleccionado,
+                    cantidad
+                });
+            }
+
+            renderCotizacion();
+        }
+
+        function renderCotizacion(){
+            const tbody = document.querySelector("#tablaCotizacion tbody");
+            tbody.innerHTML = "";
+
+            let total = 0;
+
+            itemsCotizacion.forEach((p, i) => {
+                const subtotal = p.precio * p.cantidad;
+                total += subtotal;
+
+                tbody.innerHTML += \`
+                    <tr>
+                        <td>\${p.nombre}</td>
+                        <td>\${p.cantidad}</td>
+                        <td>$\${subtotal.toLocaleString('es-CL')}</td>
+                        <td>
+                            <button class="btn-delete" onclick="eliminarItemCotizacion(\${i})">✕</button>
+                        </td>
+                    </tr>
+                \`;
+            });
+
+            document.getElementById("totalCotizacion").innerText =
+                "$" + total.toLocaleString('es-CL');
+        }
+
+        function eliminarItemCotizacion(i){
+            itemsCotizacion.splice(i, 1);
+            renderCotizacion();
+        }
+
+        function guardarCotizacion(){
+            if(itemsCotizacion.length === 0) return alert("Agrega productos a la cotización");
+
+            const cliente = document.getElementById("cliente").value.trim();
+            if(!cliente) return alert("Ingresa el nombre del cliente");
+
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/cotizaciones/nueva";
+
+            const campos = {
+                cliente,
+                telefono: document.getElementById("telefono").value,
+                direccion: document.getElementById("direccion").value,
+                observacion: document.getElementById("observacion").value
+            };
+
+            Object.keys(campos).forEach(nombre => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = nombre;
+                input.value = campos[nombre];
+                form.appendChild(input);
+            });
+
+            itemsCotizacion.forEach(p => {
+                const id = document.createElement("input");
+                id.type = "hidden";
+                id.name = "producto_id[]";
+                id.value = p.id;
+                form.appendChild(id);
+
+                const cantidad = document.createElement("input");
+                cantidad.type = "hidden";
+                cantidad.name = "cantidad[]";
+                cantidad.value = p.cantidad;
+                form.appendChild(cantidad);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        document.getElementById("buscarCotProducto").onkeyup = function(){
+            const filtro = this.value.toLowerCase();
+
+            document.querySelectorAll(".pos-row").forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(filtro) ? "" : "none";
+            });
+        };
+    </script>`;
+
+    res.send(layout('Nueva Cotización', content, scripts));
+});
 
 // ---------------------------------------------------------
 // 📈 REPORTES

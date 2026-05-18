@@ -1781,3 +1781,29 @@ td small{
         grid-template-columns:1fr;
     }
 }
+
+/* =========================================================
+   COTIZACIONES
+========================================================= */
+
+.cotizacion-cliente-form{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.cotizacion-cliente-form input:nth-child(3),
+.cotizacion-cliente-form input:nth-child(4){
+    grid-column:span 2;
+}
+
+@media(max-width:800px){
+    .cotizacion-cliente-form{
+        grid-template-columns:1fr;
+    }
+
+    .cotizacion-cliente-form input:nth-child(3),
+    .cotizacion-cliente-form input:nth-child(4){
+        grid-column:span 1;
+    }
+}
