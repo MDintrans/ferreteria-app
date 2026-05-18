@@ -1257,3 +1257,36 @@ select:focus{
         max-width:100%;
     }
 }
+
+/* =========================================================
+   STOCK INTELIGENTE
+========================================================= */
+
+.stock-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:95px;
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+}
+
+.stock-critico{
+    background:#fef2f2;
+    color:#dc2626;
+    border:1px solid #fecaca;
+}
+
+.stock-medio{
+    background:#fffbeb;
+    color:#b45309;
+    border:1px solid #fde68a;
+}
+
+.stock-sano{
+    background:#f0fdf4;
+    color:#16a34a;
+    border:1px solid #bbf7d0;
+}

@@ -446,7 +446,17 @@ app.get('/productos', async (req, res) => {
         <tr>
             <td>${p.id}</td><td>${p.nombre}</td>
             <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
-            <td><span class="${p.stock < 5 ? 'stock-bajo' : ''}">${p.stock}</span></td>
+            <td>
+    <span class="${
+        p.stock <= 5 
+            ? 'stock-badge stock-critico' 
+            : p.stock <= 15 
+                ? 'stock-badge stock-medio' 
+                : 'stock-badge stock-sano'
+    }">
+        ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Sano'} · ${p.stock}
+    </span>
+</td>
         </tr>`).join('');
 
     const content = `
