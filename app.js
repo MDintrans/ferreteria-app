@@ -531,147 +531,359 @@ app.get('/productos', async (req, res) => {
 // ---------------------------------------------------------
 
 app.get('/ventas', async (req, res) => {
-    const { rows: productos } = await pool.query("SELECT * FROM productos WHERE stock > 0 ORDER BY nombre ASC");
+
+    const { rows: productos } = await pool.query(
+        "SELECT * FROM productos WHERE stock > 0 ORDER BY nombre ASC"
+    );
 
     const productosHtml = productos.map(p => `
-        <tr onclick='seleccionar(${p.id}, ${JSON.stringify(p.nombre)}, ${p.precio}, ${p.stock})' style="cursor:pointer;">
-            <td>${p.id}</td><td>${p.nombre}</td>
-            <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
-            <td><span class="${p.stock < 5 ? 'stock-bajo' : ''}">${p.stock}</span></td>
-        </tr>`).join('');
+
+        <div class="pos-producto"
+             onclick='seleccionar(
+                ${p.id},
+                ${JSON.stringify(p.nombre)},
+                ${p.precio},
+                ${p.stock}
+             )'>
+
+            <div class="pos-producto-info">
+
+                <h4>${p.nombre}</h4>
+
+                <span class="${
+                    p.stock <= 5
+                        ? 'stock-badge stock-critico'
+                        : p.stock <= 15
+                            ? 'stock-badge stock-medio'
+                            : 'stock-badge stock-sano'
+                }">
+
+                    ${
+                        p.stock <= 5
+                            ? 'Crítico'
+                            : p.stock <= 15
+                                ? 'Bajo'
+                                : 'Disponible'
+                    } · ${p.stock}
+
+                </span>
+
+            </div>
+
+            <div class="pos-producto-footer">
+
+                <strong>
+                    $${Number(p.precio).toLocaleString('es-CL')}
+                </strong>
+
+            </div>
+
+        </div>
+
+    `).join('');
 
     const content = `
+
     <div class="container">
-        <header class="topbar">
-            <h2>💰 Punto de Venta</h2>
-            <a href="/" class="btn-volver">⬅ Salir</a>
+
+        <header class="module-header">
+
+            <div>
+                <h2>💰 Punto de Venta</h2>
+                <p>
+                    Registro rápido de ventas y emisión automática de boletas.
+                </p>
+            </div>
+
+            <a href="/" class="btn-volver">
+                Volver al Dashboard
+            </a>
+
         </header>
 
-        <div style="display: flex; flex-wrap: wrap; gap: 25px;">
-            <div style="flex: 1; min-width: 300px;">
-                <input id="buscar" placeholder="🔍 Buscar producto..." style="width: 100%; margin-bottom: 10px;">
-                <div class="tabla-container" style="max-height: 400px; margin-top: 0;">
-                    <table id="tabla">
-                        <thead><tr><th>ID</th><th>Producto</th><th>Precio</th><th>Stock</th></tr></thead>
-                        <tbody>${productosHtml}</tbody>
-                    </table>
+        <section class="pos-layout">
+
+            <!-- PRODUCTOS -->
+
+            <div class="pos-left">
+
+                <div class="module-toolbar">
+
+                    <div class="productos-toolbar">
+
+                        <input
+                            id="buscar"
+                            placeholder="🔍 Buscar producto..."
+                        >
+
+                    </div>
+
                 </div>
+
+                <div class="pos-grid">
+
+                    ${productosHtml}
+
+                </div>
+
             </div>
 
-            <div style="flex: 1; min-width: 300px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
-                <h3 style="margin-top: 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">🛒 Detalle de Transacción</h3>
-                
-                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
-                    <div id="selection-display" style="color: #64748b; text-align: center; font-size: 14px;">
-                        Haz clic en un producto de la tabla para agregarlo
+            <!-- PANEL DERECHO -->
+
+            <aside class="pos-right">
+
+                <div class="pos-cart">
+
+                    <div class="pos-cart-header">
+                        <h3>🛒 Venta Actual</h3>
                     </div>
-                    <div id="pos-controls" style="display:none; flex-wrap: wrap; gap: 10px; align-items: center;">
-                        <input id="nombre" disabled style="flex: 2; min-width: 150px; background: #e2e8f0;">
-                        <input id="precio" disabled style="flex: 1; min-width: 80px; background: #e2e8f0;">
-                        <input id="cantidad" type="number" min="1" placeholder="Cant." style="flex: 1; min-width: 70px;">
-                        <button onclick="agregarAlCarrito()" style="flex: 1; min-width: 90px; margin: 5px 0;">Añadir</button>
+
+                    <div class="pos-selector">
+
+                        <input
+                            id="nombre"
+                            disabled
+                            placeholder="Producto"
+                        >
+
+                        <input
+                            id="precio"
+                            disabled
+                            placeholder="Precio"
+                        >
+
+                        <input
+                            id="cantidad"
+                            type="number"
+                            min="1"
+                            placeholder="Cant."
+                        >
+
+                        <button onclick="agregarAlCarrito()">
+                            Añadir
+                        </button>
+
                     </div>
+
+                    <div class="carrito-items">
+
+                        <table id="carrito">
+
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cant.</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody></tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="pos-total">
+
+                        <span>Total</span>
+
+                        <strong id="total">
+                            $0
+                        </strong>
+
+                    </div>
+
+                    <button
+                        class="btn-finalizar"
+                        onclick="confirmarVenta()"
+                    >
+
+                        Finalizar Venta
+
+                    </button>
+
                 </div>
 
-                <div class="tabla-container" style="margin-top: 0; flex-grow: 1; max-height: 300px;">
-                    <table id="carrito">
-                        <thead><tr><th>Prod.</th><th>Cant.</th><th>$ Sub</th><th></th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+            </aside>
 
-                <div style="margin-top: 20px; border-top: 2px solid #e2e8f0; padding-top: 15px; text-align: right;">
-                    <span style="font-size: 16px; color: #64748b;">TOTAL A PAGAR</span><br>
-                    <strong id="total" style="font-size: 28px; color: #2563eb;">$0</strong>
-                </div>
-                <button onclick="confirmarVenta()" style="width: 100%; margin-top: 15px; padding: 15px; font-size: 16px;">Finalizar Venta</button>
-            </div>
-        </div>
-    </div>`;
+        </section>
+
+    </div>
+    `;
 
     const scripts = `
     <script>
+
         let carrito = [];
         let productoSeleccionado = null;
 
         function seleccionar(id, nombre, precio, stock){
-            productoSeleccionado = {id, nombre, precio, stock};
-            document.getElementById("selection-display").style.display = "none";
-            document.getElementById("pos-controls").style.display = "flex";
-            document.getElementById("nombre").value = nombre;
-            document.getElementById("precio").value = "$"+precio.toLocaleString('es-CL');
-            document.getElementById("cantidad").value = "1";
-            document.getElementById("cantidad").focus();
+
+            productoSeleccionado = {
+                id,
+                nombre,
+                precio,
+                stock
+            };
+
+            document.getElementById("nombre").value =
+                nombre;
+
+            document.getElementById("precio").value =
+                "$" + precio.toLocaleString('es-CL');
+
+            document.getElementById("cantidad").value = 1;
         }
 
         function agregarAlCarrito(){
-            let cant = parseInt(document.getElementById("cantidad").value) || 0;
-            if(!productoSeleccionado) return;
-            if(cant <= 0) return alert("Cantidad inválida");
-            if(cant > productoSeleccionado.stock) return alert("Stock insuficiente. Quedan " + productoSeleccionado.stock);
 
-            let existente = carrito.find(p => p.id === productoSeleccionado.id);
+            let cant =
+                parseInt(
+                    document.getElementById("cantidad").value
+                ) || 0;
+
+            if(!productoSeleccionado)
+                return alert("Selecciona un producto");
+
+            if(cant <= 0)
+                return alert("Cantidad inválida");
+
+            if(cant > productoSeleccionado.stock)
+                return alert("Stock insuficiente");
+
+            let existente =
+                carrito.find(
+                    p => p.id === productoSeleccionado.id
+                );
+
             if(existente){
-                if(existente.cantidad + cant > productoSeleccionado.stock) return alert("Excede stock");
+
                 existente.cantidad += cant;
+
             } else {
-                carrito.push({...productoSeleccionado, cantidad: cant});
+
+                carrito.push({
+                    ...productoSeleccionado,
+                    cantidad: cant
+                });
             }
 
             actualizarVista();
-            document.getElementById("pos-controls").style.display = "none";
-            document.getElementById("selection-display").style.display = "block";
-            productoSeleccionado = null;
         }
 
         function actualizarVista(){
-            let tbody = document.querySelector("#carrito tbody");
+
+            let tbody =
+                document.querySelector("#carrito tbody");
+
             tbody.innerHTML = '';
+
             let total = 0;
 
             carrito.forEach((p, i) => {
-                let sub = p.precio * p.cantidad;
+
+                let sub =
+                    p.precio * p.cantidad;
+
                 total += sub;
+
                 tbody.innerHTML += \`
-                <tr>
-                    <td>\${p.nombre}</td>
-                    <td class="right">\${p.cantidad}</td>
-                    <td class="right">$\${sub.toLocaleString('es-CL')}</td>
-                    <td><button onclick="eliminar(\${i})" style="padding: 4px 8px; font-size: 12px; background: #ef4444;">✕</button></td>
-                </tr>\`;
+                    <tr>
+
+                        <td>\${p.nombre}</td>
+
+                        <td>
+                            \${p.cantidad}
+                        </td>
+
+                        <td>
+                            $\${sub.toLocaleString('es-CL')}
+                        </td>
+
+                        <td>
+                            <button
+                                onclick="eliminar(\${i})"
+                                class="btn-delete"
+                            >
+                                ✕
+                            </button>
+                        </td>
+
+                    </tr>
+                \`;
             });
-            document.getElementById("total").innerText = "$" + total.toLocaleString('es-CL');
+
+            document.getElementById("total").innerText =
+                "$" + total.toLocaleString('es-CL');
         }
 
         function eliminar(i){
-            carrito.splice(i, 1);
+
+            carrito.splice(i,1);
+
             actualizarVista();
         }
 
         function confirmarVenta(){
-            if(carrito.length === 0) return alert("El carrito está vacío");
-            let form = document.createElement("form");
+
+            if(carrito.length === 0)
+                return alert("El carrito está vacío");
+
+            let form =
+                document.createElement("form");
+
             form.method = "POST";
             form.action = "/ventas";
+
             carrito.forEach(p => {
-                let id = document.createElement("input");
-                id.type = "hidden"; id.name = "producto_id[]"; id.value = p.id;
+
+                let id =
+                    document.createElement("input");
+
+                id.type = "hidden";
+                id.name = "producto_id[]";
+                id.value = p.id;
+
                 form.appendChild(id);
-                let c = document.createElement("input");
-                c.type = "hidden"; c.name = "cantidad[]"; c.value = p.cantidad;
+
+                let c =
+                    document.createElement("input");
+
+                c.type = "hidden";
+                c.name = "cantidad[]";
+                c.value = p.cantidad;
+
                 form.appendChild(c);
             });
+
             document.body.appendChild(form);
+
             form.submit();
         }
 
-        document.getElementById("buscar").onkeyup = function(){
-            let f = this.value.toLowerCase();
-            document.querySelectorAll("#tabla tbody tr").forEach(r => {
-                r.style.display = r.innerText.toLowerCase().includes(f) ? "" : "none";
+        document.getElementById("buscar")
+        .onkeyup = function(){
+
+            let f =
+                this.value.toLowerCase();
+
+            document.querySelectorAll(".pos-producto")
+            .forEach(card => {
+
+                card.style.display =
+                    card.innerText
+                        .toLowerCase()
+                        .includes(f)
+
+                        ? ""
+
+                        : "none";
             });
         };
-    </script>`;
+
+    </script>
+    `;
 
     res.send(layout('Ventas', content, scripts));
 });
