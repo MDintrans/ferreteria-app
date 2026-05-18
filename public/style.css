@@ -1618,52 +1618,51 @@ select:focus{
 }
 
 /* =========================================================
-   POS LISTA COMPACTA
+   POS PRODUCTOS FORMATO TABLA
 ========================================================= */
 
 .pos-grid{
     display:flex;
     flex-direction:column;
-    gap:10px;
+    gap:0;
     max-height:620px;
     overflow-y:auto;
     padding-right:6px;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    background:white;
 }
 
 .pos-row{
-    background:white;
-    border:1px solid #e5e7eb;
-    border-radius:16px;
-    padding:14px 16px;
-
     display:grid;
-    grid-template-columns:1.5fr 140px 130px;
+    grid-template-columns: 1.8fr 170px 120px 120px;
     align-items:center;
-    gap:16px;
-
-    transition:all .18s ease;
+    gap:14px;
+    padding:14px 16px;
+    border-bottom:1px solid #eef2f7;
     cursor:pointer;
+    transition:all .18s ease;
 }
 
 .pos-row:hover{
     background:#fffbeb;
-    border-color:#facc15;
-    transform:translateX(2px);
 }
 
 .pos-row-info{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
+    display:block;
 }
 
 .pos-row-info strong{
-    font-size:15px;
+    font-size:14px;
     color:#111827;
 }
 
+.pos-row-info .stock-badge{
+    margin-top:0;
+}
+
 .pos-row-price{
-    font-size:20px;
+    font-size:18px;
     font-weight:900;
     color:#111827;
 }
@@ -1673,22 +1672,11 @@ select:focus{
     color:#111827;
     border:none;
     border-radius:12px;
-    padding:12px;
+    padding:10px 12px;
     font-weight:800;
     cursor:pointer;
 }
 
 .btn-pos-add:hover{
     background:#eab308;
-}
-
-@media(max-width:900px){
-
-    .pos-row{
-        grid-template-columns:1fr;
-    }
-
-    .pos-row-price{
-        font-size:18px;
-    }
 }

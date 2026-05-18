@@ -539,43 +539,28 @@ app.get('/ventas', async (req, res) => {
 const productosHtml = productos.map(p => `
 
     <div class="pos-row"
-         onclick='seleccionar(
-            ${p.id},
-            ${JSON.stringify(p.nombre)},
-            ${p.precio},
-            ${p.stock}
-         )'>
+         onclick='seleccionar(${p.id}, ${JSON.stringify(p.nombre)}, ${p.precio}, ${p.stock})'>
 
         <div class="pos-row-info">
-
             <strong>${p.nombre}</strong>
-
-            <span class="${
-                p.stock <= 5
-                    ? 'stock-badge stock-critico'
-                    : p.stock <= 15
-                        ? 'stock-badge stock-medio'
-                        : 'stock-badge stock-sano'
-            }">
-
-                ${
-                    p.stock <= 5
-                        ? 'Crítico'
-                        : p.stock <= 15
-                            ? 'Bajo'
-                            : 'Disponible'
-                } · ${p.stock}
-
-            </span>
-
         </div>
+
+        <span class="${
+            p.stock <= 5
+                ? 'stock-badge stock-critico'
+                : p.stock <= 15
+                    ? 'stock-badge stock-medio'
+                    : 'stock-badge stock-sano'
+        }">
+            ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Disponible'} · ${p.stock}
+        </span>
 
         <div class="pos-row-price">
             $${Number(p.precio).toLocaleString('es-CL')}
         </div>
 
-        <button class="btn-pos-add">
-            + Agregar
+        <button class="btn-pos-add" type="button">
+            Agregar
         </button>
 
     </div>
@@ -868,7 +853,7 @@ const productosHtml = productos.map(p => `
             let f =
                 this.value.toLowerCase();
 
-            document.querySelectorAll(".pos-producto")
+            document.querySelectorAll(".pos-row")
             .forEach(card => {
 
                 card.style.display =
