@@ -971,3 +971,66 @@ select:focus{
         justify-content:center;
     }
 }
+
+/* =========================================================
+   DASHBOARD PANEL GERENTE
+========================================================= */
+
+.dashboard-panel{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+
+.panel-card{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:22px;
+    min-height:140px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+}
+
+.panel-card::before{
+    content:'';
+    position:absolute;
+    left:0;
+    top:0;
+    width:5px;
+    height:100%;
+    background:var(--primary);
+}
+
+.panel-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+}
+
+.panel-header h3{
+    font-size:18px;
+    color:#111827;
+}
+
+.panel-header a{
+    font-size:13px;
+    font-weight:700;
+    color:#ca8a04;
+    text-decoration:none;
+}
+
+.panel-card p{
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.5;
+}
+
+@media(max-width:900px){
+    .dashboard-panel{
+        grid-template-columns:1fr;
+    }
+}

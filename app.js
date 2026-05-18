@@ -235,43 +235,33 @@ app.get('/', async (req, res) => {
             </div>
         </section>
 
-        <section class="grid">
-            <a class="card" href="/inventario">
-                <span class="card-icon">📦</span>
-                <strong>Gestión de Productos</strong>
-                <small>Crear, editar y controlar stock</small>
-            </a>
+<section class="dashboard-panel">
 
-            <a class="card" href="/productos">
-                <span class="card-icon">📊</span>
-                <strong>Vista de Inventario</strong>
-                <small>Consulta rápida de productos</small>
-            </a>
+    <div class="panel-card">
+        <div class="panel-header">
+            <h3>⚠️ Stock Crítico</h3>
+            <a href="/reportes/stock">Ver todos</a>
+        </div>
+        <p>Productos con bajo inventario que requieren revisión.</p>
+    </div>
 
-            <a class="card" href="/ventas">
-                <span class="card-icon">💰</span>
-                <strong>Punto de Venta</strong>
-                <small>Registrar ventas y emitir boleta</small>
-            </a>
+    <div class="panel-card">
+        <div class="panel-header">
+            <h3>🚚 Despachos Pendientes</h3>
+            <a href="/despacho">Ver despachos</a>
+        </div>
+        <p>Pedidos pendientes, en ruta o por coordinar entrega.</p>
+    </div>
 
-            <a class="card" href="/reportes">
-                <span class="card-icon">📈</span>
-                <strong>Centro de Reportes</strong>
-                <small>Ventas, stock y productos vendidos</small>
-            </a>
+    <div class="panel-card">
+        <div class="panel-header">
+            <h3>📈 Reportes</h3>
+            <a href="/reportes">Abrir centro</a>
+        </div>
+        <p>Consulta ventas, productos más vendidos y movimientos.</p>
+    </div>
 
-            <a class="card" href="/despacho">
-                <span class="card-icon">🚚</span>
-                <strong>Logística y Despacho</strong>
-                <small>Control de entregas pendientes</small>
-            </a>
-
-            <a class="card" href="/proveedores">
-                <span class="card-icon">👷</span>
-                <strong>Directorio Proveedores</strong>
-                <small>Contactos y empresas proveedoras</small>
-            </a>
-        </section>
+</section>
 
     </div>`;
 
