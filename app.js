@@ -56,7 +56,20 @@ function layout(title, content, scripts = '', showSidebar = true) {
         <main class="${showSidebar ? 'main-content' : 'main-wrapper'}">
             ${content}
         </main>
+<script>
+    const pathActual = window.location.pathname;
 
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+        const href = link.getAttribute('href');
+
+        if (
+            href === pathActual ||
+            (href !== '/' && pathActual.startsWith(href))
+        ) {
+            link.classList.add('active');
+        }
+    });
+</script>
         ${scripts}
     </body>
     </html>`;

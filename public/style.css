@@ -836,3 +836,20 @@ select:focus{
         text-align:center;
     }
 }
+
+/* =========================================================
+   SIDEBAR ITEM ACTIVO
+========================================================= */
+
+.sidebar-nav a.active{
+    background:#facc15;
+    color:#111827;
+    font-weight:900;
+    box-shadow:0 8px 20px rgba(250,204,21,.25);
+}
+
+.sidebar-nav a.active:hover{
+    background:#facc15;
+    color:#111827;
+    transform:none;
+}
