@@ -147,26 +147,93 @@ app.use((req, res, next) => {
 // 🏠 DASHBOARD PRINCIPAL
 // ---------------------------------------------------------
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
+    const { rows: productos } = await pool.query("SELECT COUNT(*) AS total FROM productos");
+    const { rows: stockCritico } = await pool.query("SELECT COUNT(*) AS total FROM productos WHERE stock <= 5");
+    const { rows: despachosPendientes } = await pool.query("SELECT COUNT(*) AS total FROM despachos WHERE estado != 'Entregado'");
+    const { rows: ventasHoy } = await pool.query(`
+        SELECT COALESCE(SUM(total), 0) AS total 
+        FROM ventas 
+        WHERE DATE(fecha) = CURRENT_DATE
+    `);
+
     const content = `
     <div class="container">
+
         <header class="topbar">
             <div class="brand">
                 <h1>🔧 Ferretería Central</h1>
-                <p>Panel de Administración General</p>
+                <p>Dashboard Gerencial · Panel de Administración</p>
             </div>
             <a href="/logout" class="btn-volver">Cerrar sesión</a>
         </header>
-        
-        <section class="grid">
-            <a class="card" href="/inventario">📦<br>Gestión de Productos</a>
-            <a class="card" href="/productos">📊<br>Vista de Inventario</a>
-            <a class="card" href="/ventas">💰<br>Punto de Venta</a>
-            <a class="card" href="/reportes">📈<br>Centro de Reportes</a>
-            <a class="card" href="/despacho">🚚<br>Logística y Despacho</a>
-            <a class="card" href="/proveedores">👷<br>Directorio Proveedores</a>
+
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-icon">💰</span>
+                <p>Ventas Hoy</p>
+                <h2>$${Number(ventasHoy[0].total).toLocaleString('es-CL')}</h2>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-icon">📦</span>
+                <p>Productos</p>
+                <h2>${productos[0].total}</h2>
+            </div>
+
+            <div class="kpi-card alerta">
+                <span class="kpi-icon">⚠️</span>
+                <p>Stock Crítico</p>
+                <h2>${stockCritico[0].total}</h2>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-icon">🚚</span>
+                <p>Despachos Pendientes</p>
+                <h2>${despachosPendientes[0].total}</h2>
+            </div>
         </section>
+
+        <section class="grid">
+            <a class="card" href="/inventario">
+                <span class="card-icon">📦</span>
+                <strong>Gestión de Productos</strong>
+                <small>Crear, editar y controlar stock</small>
+            </a>
+
+            <a class="card" href="/productos">
+                <span class="card-icon">📊</span>
+                <strong>Vista de Inventario</strong>
+                <small>Consulta rápida de productos</small>
+            </a>
+
+            <a class="card" href="/ventas">
+                <span class="card-icon">💰</span>
+                <strong>Punto de Venta</strong>
+                <small>Registrar ventas y emitir boleta</small>
+            </a>
+
+            <a class="card" href="/reportes">
+                <span class="card-icon">📈</span>
+                <strong>Centro de Reportes</strong>
+                <small>Ventas, stock y productos vendidos</small>
+            </a>
+
+            <a class="card" href="/despacho">
+                <span class="card-icon">🚚</span>
+                <strong>Logística y Despacho</strong>
+                <small>Control de entregas pendientes</small>
+            </a>
+
+            <a class="card" href="/proveedores">
+                <span class="card-icon">👷</span>
+                <strong>Directorio Proveedores</strong>
+                <small>Contactos y empresas proveedoras</small>
+            </a>
+        </section>
+
     </div>`;
+
     res.send(layout('Dashboard', content));
 });
 
