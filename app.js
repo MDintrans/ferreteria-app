@@ -15,24 +15,85 @@ function getFechaChile() {
     });
 }
 
-// 🖼️ LAYOUT BASE (Estructura moderna y centralizada)
 function layout(title, content, scripts = '') {
     return `
     <!DOCTYPE html>
     <html lang="es">
+
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${title} | Ferretería</title>
+
+        <title>${title} | Ferretería Central</title>
+
         <link rel="stylesheet" href="/style.css">
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     </head>
+
     <body>
-        <main class="main-wrapper">
+
+        <aside class="sidebar">
+
+            <div class="sidebar-logo">
+                <h2>🔧 FERRETERÍA</h2>
+                <span>CENTRAL ERP</span>
+            </div>
+
+            <nav class="sidebar-menu">
+
+                <a href="/" class="sidebar-link">
+                    🏠 Dashboard
+                </a>
+
+                <a href="/inventario" class="sidebar-link">
+                    📦 Inventario
+                </a>
+
+                <a href="/productos" class="sidebar-link">
+                    📊 Productos
+                </a>
+
+                <a href="/ventas" class="sidebar-link">
+                    💰 Ventas
+                </a>
+
+                <a href="/reportes" class="sidebar-link">
+                    📈 Reportes
+                </a>
+
+                <a href="/despacho" class="sidebar-link">
+                    🚚 Despachos
+                </a>
+
+                <a href="/proveedores" class="sidebar-link">
+                    👷 Proveedores
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">
+                    ⛔ Cerrar sesión
+                </a>
+            </div>
+
+        </aside>
+
+        <main class="main-content">
+
             ${content}
+
         </main>
+
         ${scripts}
+
     </body>
-    </html>`;
+
+    </html>
+    `;
 }
 
 // 🔥 MIDDLEWARE & BODY PARSER
