@@ -327,10 +327,16 @@ app.get('/inventario', async (req, res) => {
             <td>${p.nombre}</td>
             <td class="text-price">$${Number(p.precio).toLocaleString('es-CL')}</td>
             <td>
-                <span class="${p.stock < 5 ? 'stock-bajo' : ''}">
-                    ${p.stock}
-                </span>
-            </td>
+    <span class="${
+        p.stock <= 5 
+            ? 'stock-badge stock-critico' 
+            : p.stock <= 15 
+                ? 'stock-badge stock-medio' 
+                : 'stock-badge stock-sano'
+    }">
+        ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Sano'} · ${p.stock}
+    </span>
+</td>
             <td class="actions">
                 <form method="GET" action="/editar/${p.id}">
                     <button class="btn-yellow">Editar</button>
