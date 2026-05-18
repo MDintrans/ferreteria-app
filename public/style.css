@@ -1290,3 +1290,55 @@ select:focus{
     color:#16a34a;
     border:1px solid #bbf7d0;
 }
+
+/* =========================================================
+   TABLA ERP PREMIUM - STICKY + HOVER
+========================================================= */
+
+.tabla-container{
+    max-height:520px;
+    overflow:auto;
+    position:relative;
+}
+
+.tabla-container thead th{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:#111827;
+}
+
+.tabla-container tbody tr{
+    transition:all .18s ease;
+}
+
+.tabla-container tbody tr:hover td{
+    background:#fffbeb;
+}
+
+.tabla-container tbody tr:hover td:first-child{
+    border-left:4px solid #facc15;
+}
+
+.tabla-container td:first-child{
+    border-left:4px solid transparent;
+}
+
+.tabla-container::-webkit-scrollbar{
+    width:8px;
+    height:8px;
+}
+
+.tabla-container::-webkit-scrollbar-track{
+    background:#f1f5f9;
+    border-radius:999px;
+}
+
+.tabla-container::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:999px;
+}
+
+.tabla-container::-webkit-scrollbar-thumb:hover{
+    background:#94a3b8;
+}
