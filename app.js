@@ -320,46 +320,52 @@ const { rows: ultimasVentas } = await pool.query(`
 
 app.get('/inventario', async (req, res) => {
     const { rows } = await pool.query("SELECT * FROM productos ORDER BY id ASC");
-    
+
     let rowsHtml = rows.map(p => `
         <tr>
             <td><strong>#${p.id}</strong></td>
             <td>${p.nombre}</td>
             <td class="text-price">$${Number(p.precio).toLocaleString('es-CL')}</td>
-            <td><span class="${p.stock < 5 ? 'stock-bajo' : ''}">${p.stock}</span></td>
+            <td>
+                <span class="${p.stock < 5 ? 'stock-bajo' : ''}">
+                    ${p.stock}
+                </span>
+            </td>
             <td class="actions">
-                <form method="GET" action="/editar/${p.id}" style="display:inline;">
-                    <button style="padding: 6px 12px; font-size: 13px;">✏️ Editar</button>
+                <form method="GET" action="/editar/${p.id}">
+                    <button class="btn-yellow">Editar</button>
                 </form>
-                <form method="POST" action="/eliminar/${p.id}" style="display:inline;" onsubmit="return confirm('¿Eliminar producto?')">
-                    <button style="padding: 6px 12px; font-size: 13px; background: #ef4444;">🗑️</button>
+
+                <form method="POST" action="/eliminar/${p.id}" onsubmit="return confirm('¿Eliminar producto?')">
+                    <button class="btn-danger">Eliminar</button>
                 </form>
             </td>
         </tr>`).join('');
 
     const content = `
     <div class="container">
-        <header class="topbar">
-            <h2>📦 Gestión de Productos</h2>
-            <a href="/" class="btn-volver">⬅ Volver al Inicio</a>
+
+        <header class="module-header">
+            <div>
+                <h2>📦 Gestión de Productos</h2>
+                <p>Administra productos, precios y stock disponible.</p>
+            </div>
+            <a href="/" class="btn-volver">Volver al Dashboard</a>
         </header>
 
-        <section style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin-bottom: 20px; padding-bottom: 15px; position: sticky; top: 115px; z-index: 90; background: #f1f5f9;">
-            
-            <div style="flex: 1; min-width: 250px;">
-                <input id="buscar" placeholder="🔍 Buscar producto..." style="width: 100%;">
-            </div>
+        <section class="module-toolbar">
+            <h4>+ Nuevo Producto</h4>
 
-            <div style="flex: 2; min-width: 300px; background: #fff; padding: 15px; border-radius: 12px; border: 2px solid #1e293b; box-shadow: 4px 4px 0px #1e293b;">
-                <h4 style="margin: 0 0 10px 0;">+ Nuevo Producto</h4>
-                <form method="POST" action="/agregar" autocomplete="off" style="display: flex; gap: 10px; flex-wrap: wrap;" onsubmit="setTimeout(()=>this.reset(),100)">
-                    <input name="nombre" placeholder="Nombre" required style="flex: 2; min-width: 120px;">
-                    <input name="precio" type="number" placeholder="Precio" required style="flex: 1; min-width: 80px;">
-                    <input name="stock" type="number" placeholder="Stock" required style="flex: 1; min-width: 80px;">
-                    <button style="margin: 5px 0;">Añadir</button>
-                </form>
-            </div>
+            <form method="POST" action="/agregar" autocomplete="off" class="module-form" onsubmit="setTimeout(()=>this.reset(),100)">
+                <input name="nombre" placeholder="Nombre del producto" required>
+                <input name="precio" type="number" placeholder="Precio" required>
+                <input name="stock" type="number" placeholder="Stock" required>
+                <button class="btn-yellow">Añadir</button>
+            </form>
+        </section>
 
+        <section class="module-search">
+            <input id="buscar" placeholder="🔍 Buscar producto...">
         </section>
 
         <div class="tabla-container">
@@ -376,12 +382,14 @@ app.get('/inventario', async (req, res) => {
                 <tbody>${rowsHtml}</tbody>
             </table>
         </div>
+
     </div>`;
 
     const script = `
     <script>
         document.getElementById("buscar").onkeyup = function(){
             let f = this.value.toLowerCase();
+
             document.querySelectorAll("#tabla tbody tr").forEach(r => {
                 r.style.display = r.innerText.toLowerCase().includes(f) ? "" : "none";
             });

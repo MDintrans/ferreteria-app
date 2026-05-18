@@ -1135,3 +1135,125 @@ select:focus{
 .panel-card.ventas::before{
     background:#22c55e;
 }
+
+/* =========================================================
+   MODULOS ERP - FORMATO GLOBAL
+========================================================= */
+
+.module-header{
+    background:#111827;
+    color:white;
+    border-radius:18px;
+    padding:22px 24px;
+    margin-bottom:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:var(--shadow);
+}
+
+.module-header h2{
+    font-size:24px;
+    font-weight:900;
+    color:white;
+    margin-bottom:4px;
+}
+
+.module-header p{
+    color:#cbd5e1;
+    font-size:14px;
+}
+
+.module-header .btn-volver{
+    background:#facc15;
+    color:#111827;
+}
+
+.module-header .btn-volver:hover{
+    background:#eab308;
+}
+
+.module-toolbar{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:18px;
+    box-shadow:var(--shadow);
+}
+
+.module-toolbar h4{
+    font-size:16px;
+    margin-bottom:12px;
+    color:#111827;
+}
+
+.module-form{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr auto;
+    gap:12px;
+    align-items:center;
+}
+
+.module-search{
+    margin-bottom:14px;
+}
+
+.module-search input{
+    max-width:360px;
+}
+
+.btn-yellow{
+    background:#facc15;
+    color:#111827;
+}
+
+.btn-yellow:hover{
+    background:#eab308;
+}
+
+.btn-danger{
+    background:#ef4444;
+    color:white;
+}
+
+.btn-danger:hover{
+    background:#dc2626;
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.actions form{
+    margin:0;
+}
+
+.actions button{
+    padding:8px 10px;
+    border-radius:10px;
+    font-size:12px;
+}
+
+.text-price{
+    font-weight:800;
+    color:#111827;
+}
+
+@media(max-width:900px){
+    .module-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:14px;
+    }
+
+    .module-form{
+        grid-template-columns:1fr;
+    }
+
+    .module-search input{
+        max-width:100%;
+    }
+}
