@@ -1034,3 +1034,45 @@ select:focus{
         grid-template-columns:1fr;
     }
 }
+
+/* =========================================================
+   MINI LISTAS DASHBOARD
+========================================================= */
+
+.mini-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:12px;
+}
+
+.mini-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:#f8fafc;
+    border:1px solid #eef2f7;
+    font-size:13px;
+}
+
+.mini-row span{
+    color:#374151;
+    font-weight:600;
+}
+
+.mini-row strong{
+    color:#111827;
+    font-size:13px;
+}
+
+.mini-row strong.danger{
+    color:#dc2626;
+}
+
+.empty-text{
+    color:#6b7280;
+    font-size:13px;
+}

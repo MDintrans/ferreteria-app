@@ -197,6 +197,28 @@ app.get('/', async (req, res) => {
         FROM ventas 
         WHERE DATE(fecha) = CURRENT_DATE
     `);
+    const { rows: listaStockCritico } = await pool.query(`
+    SELECT nombre, stock 
+    FROM productos 
+    WHERE stock <= 5 
+    ORDER BY stock ASC 
+    LIMIT 5
+`);
+
+const { rows: listaDespachos } = await pool.query(`
+    SELECT cliente, estado, fecha_entrega 
+    FROM despachos 
+    WHERE estado != 'Entregado' 
+    ORDER BY id DESC 
+    LIMIT 5
+`);
+
+const { rows: ultimasVentas } = await pool.query(`
+    SELECT id, fecha, total 
+    FROM ventas 
+    ORDER BY fecha DESC 
+    LIMIT 5
+`);
 
     const content = `
     <div class="container">
@@ -242,7 +264,15 @@ app.get('/', async (req, res) => {
             <h3>⚠️ Stock Crítico</h3>
             <a href="/reportes/stock">Ver todos</a>
         </div>
-        <p>Productos con bajo inventario que requieren revisión.</p>
+
+        <div class="mini-list">
+            ${listaStockCritico.length ? listaStockCritico.map(p => `
+                <div class="mini-row">
+                    <span>${p.nombre}</span>
+                    <strong class="danger">${p.stock}</strong>
+                </div>
+            `).join('') : `<p class="empty-text">Sin productos críticos.</p>`}
+        </div>
     </div>
 
     <div class="panel-card">
@@ -250,15 +280,31 @@ app.get('/', async (req, res) => {
             <h3>🚚 Despachos Pendientes</h3>
             <a href="/despacho">Ver despachos</a>
         </div>
-        <p>Pedidos pendientes, en ruta o por coordinar entrega.</p>
+
+        <div class="mini-list">
+            ${listaDespachos.length ? listaDespachos.map(d => `
+                <div class="mini-row">
+                    <span>${d.cliente || 'Sin cliente'}</span>
+                    <strong>${d.estado}</strong>
+                </div>
+            `).join('') : `<p class="empty-text">Sin despachos pendientes.</p>`}
+        </div>
     </div>
 
     <div class="panel-card">
         <div class="panel-header">
-            <h3>📈 Reportes</h3>
-            <a href="/reportes">Abrir centro</a>
+            <h3>💰 Últimas Ventas</h3>
+            <a href="/reportes/detalle">Ver ventas</a>
         </div>
-        <p>Consulta ventas, productos más vendidos y movimientos.</p>
+
+        <div class="mini-list">
+            ${ultimasVentas.length ? ultimasVentas.map(v => `
+                <div class="mini-row">
+                    <span>Venta #${v.id}</span>
+                    <strong>$${Number(v.total).toLocaleString('es-CL')}</strong>
+                </div>
+            `).join('') : `<p class="empty-text">Aún no hay ventas.</p>`}
+        </div>
     </div>
 
 </section>
