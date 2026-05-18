@@ -975,18 +975,89 @@ app.get('/boleta/:id', async (req,res)=>{
 // ---------------------------------------------------------
 
 app.get('/reportes', async (req, res) => {
+    const { rows: ventasTotal } = await pool.query(`
+        SELECT COALESCE(SUM(total), 0) AS total FROM ventas
+    `);
+
+    const { rows: cantidadVentas } = await pool.query(`
+        SELECT COUNT(*) AS total FROM ventas
+    `);
+
+    const { rows: stockCritico } = await pool.query(`
+        SELECT COUNT(*) AS total FROM productos WHERE stock <= 5
+    `);
+
+    const { rows: productosVendidos } = await pool.query(`
+        SELECT COALESCE(SUM(cantidad), 0) AS total FROM detalle_ventas
+    `);
+
     const content = `
     <div class="container">
-        <header class="topbar">
-            <h2>📈 Centro de Reportes</h2>
-            <a href="/" class="btn-volver">⬅ Volver</a>
+
+        <header class="module-header">
+            <div>
+                <h2>📈 Centro de Reportes</h2>
+                <p>Resumen comercial, ventas, productos y alertas de inventario.</p>
+            </div>
+            <a href="/" class="btn-volver">Volver al Dashboard</a>
         </header>
-        <div class="grid">
-            <a class="card" href="/reportes/detalle">📋<br>Detalle de Ventas</a>
-            <a class="card" href="/reportes/productos">🏆<br>Más Vendidos</a>
-            <a class="card" href="/reportes/stock">⚠️<br>Stock Crítico</a>
-        </div>
+
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-icon">💰</span>
+                <p>Ventas Totales</p>
+                <h2>$${Number(ventasTotal[0].total).toLocaleString('es-CL')}</h2>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-icon">🧾</span>
+                <p>Cantidad Ventas</p>
+                <h2>${cantidadVentas[0].total}</h2>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-icon">📦</span>
+                <p>Productos Vendidos</p>
+                <h2>${productosVendidos[0].total}</h2>
+            </div>
+
+            <div class="kpi-card alerta">
+                <span class="kpi-icon">⚠️</span>
+                <p>Stock Crítico</p>
+                <h2>${stockCritico[0].total}</h2>
+            </div>
+        </section>
+
+        <section class="reportes-grid">
+
+            <a class="reporte-card" href="/reportes/detalle">
+                <span>📋</span>
+                <div>
+                    <h3>Detalle de Ventas</h3>
+                    <p>Consulta ventas por día, mes o historial reciente.</p>
+                </div>
+            </a>
+
+            <a class="reporte-card" href="/reportes/productos">
+                <span>🏆</span>
+                <div>
+                    <h3>Productos Más Vendidos</h3>
+                    <p>Ranking de productos con mayor movimiento.</p>
+                </div>
+            </a>
+
+            <a class="reporte-card" href="/reportes/stock">
+                <span>⚠️</span>
+                <div>
+                    <h3>Stock Crítico</h3>
+                    <p>Productos que requieren reposición urgente.</p>
+                </div>
+            </a>
+
+        </section>
+
     </div>`;
+
     res.send(layout('Reportes', content));
 });
 

@@ -1718,3 +1718,66 @@ td small{
         grid-template-columns:1fr;
     }
 }
+
+/* =========================================================
+   REPORTES PRO
+========================================================= */
+
+.reportes-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+
+.reporte-card{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:22px;
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    text-decoration:none;
+    color:inherit;
+    box-shadow:var(--shadow);
+    transition:all .2s ease;
+    position:relative;
+    overflow:hidden;
+}
+
+.reporte-card::before{
+    content:'';
+    position:absolute;
+    left:0;
+    top:0;
+    width:5px;
+    height:100%;
+    background:#facc15;
+}
+
+.reporte-card:hover{
+    transform:translateY(-4px);
+    box-shadow:var(--shadow-hover);
+}
+
+.reporte-card span{
+    font-size:30px;
+}
+
+.reporte-card h3{
+    font-size:18px;
+    color:#111827;
+    margin-bottom:6px;
+}
+
+.reporte-card p{
+    color:#6b7280;
+    font-size:14px;
+    line-height:1.5;
+}
+
+@media(max-width:900px){
+    .reportes-grid{
+        grid-template-columns:1fr;
+    }
+}
