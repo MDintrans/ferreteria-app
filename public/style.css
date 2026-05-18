@@ -1552,3 +1552,67 @@ select:focus{
         position:static;
     }
 }
+
+/* =========================================================
+   POS PRODUCTOS CON SCROLL INTERNO
+========================================================= */
+
+.pos-left{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:18px;
+    box-shadow:var(--shadow);
+}
+
+.pos-left .module-toolbar{
+    margin-bottom:16px;
+    box-shadow:none;
+    border:0;
+    padding:0;
+}
+
+.pos-grid{
+    max-height:610px;
+    overflow-y:auto;
+    padding-right:8px;
+}
+
+/* Scroll elegante productos */
+
+.pos-grid::-webkit-scrollbar{
+    width:8px;
+}
+
+.pos-grid::-webkit-scrollbar-track{
+    background:#f1f5f9;
+    border-radius:999px;
+}
+
+.pos-grid::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:999px;
+}
+
+.pos-grid::-webkit-scrollbar-thumb:hover{
+    background:#94a3b8;
+}
+
+/* Cards POS más compactas */
+
+.pos-producto{
+    min-height:125px;
+    padding:16px;
+}
+
+.pos-producto h4{
+    font-size:15px;
+}
+
+.pos-producto-footer strong{
+    font-size:22px;
+}
+
+.pos-producto .stock-badge{
+    min-width:100%;
+}
