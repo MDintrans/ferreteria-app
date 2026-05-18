@@ -474,7 +474,7 @@ app.get('/productos', async (req, res) => {
                 <h2>📊 Vista de Inventario</h2>
                 <p>Consulta rápida de productos, precios y estado de stock.</p>
             </div>
-            <a href="/" class="btn-volver">Volver al Dashboard</a>
+            <a href="/" class="btn-volver">Volver al Inicio</a>
         </header>
 
         <section class="module-toolbar">
@@ -581,7 +581,7 @@ const productosHtml = productos.map(p => `
             </div>
 
             <a href="/" class="btn-volver">
-                Volver al Dashboard
+                Volver al Inicio
             </a>
 
         </header>
@@ -1093,50 +1093,98 @@ app.get('/despacho', async (req, res) => {
 
     let rowsHtml = rows.map(d => `
         <tr>
-            <td>${d.id}</td>
-            <td><strong>${d.cliente}</strong></td>
-            <td>${d.direccion}<br><small style="color:#64748b;">📞 ${d.contacto || '-'}</small></td>
-            <td>${d.fecha_entrega ? new Date(d.fecha_entrega).toLocaleDateString('es-CL') : '-'}</td>
-            <td>${d.venta_id ? `<a href="/boleta/${d.venta_id}" target="_blank" style="color:#2563eb; text-decoration:none;">📄 Ver Boleta</a>` : d.pedido}</td>
-            <td><span class="${d.estado === 'Pendiente' ? 'estado-pendiente' : d.estado === 'En ruta' ? 'estado-ruta' : 'estado-entregado'}">${d.estado}</span></td>
-            <td style="white-space: nowrap;">
-                <form method="POST" action="/despacho/estado/${d.id}" style="display:inline;">
-                    <button style="padding:6px 10px; font-size:12px; background:#64748b;">Cambiar</button>
+            <td><strong>#${d.id}</strong></td>
+
+            <td>
+                <strong>${d.cliente || 'Sin cliente'}</strong>
+                <br>
+                <small>${d.contacto || 'Sin contacto'}</small>
+            </td>
+
+            <td>
+                ${d.direccion || 'Sin dirección'}
+            </td>
+
+            <td>
+                ${d.fecha_entrega ? new Date(d.fecha_entrega).toLocaleDateString('es-CL') : 'Sin fecha'}
+            </td>
+
+            <td>
+                ${d.venta_id 
+                    ? `<a href="/boleta/${d.venta_id}" target="_blank" class="link-boleta">📄 Ver boleta</a>` 
+                    : d.pedido || 'Sin detalle'}
+            </td>
+
+            <td>
+                <span class="${
+                    d.estado === 'Pendiente'
+                        ? 'estado-pendiente'
+                        : d.estado === 'En ruta'
+                            ? 'estado-ruta'
+                            : 'estado-entregado'
+                }">
+                    ${d.estado}
+                </span>
+            </td>
+
+            <td class="actions">
+                <form method="POST" action="/despacho/estado/${d.id}">
+                    <button class="btn-yellow">Estado</button>
                 </form>
-                <form method="GET" action="/despacho/editar/${d.id}" style="display:inline;">
-                    <button style="padding:6px 10px; font-size:12px; background:#f59e0b;">Editar</button>
+
+                <form method="GET" action="/despacho/editar/${d.id}">
+                    <button>Editar</button>
                 </form>
             </td>
-        </tr>`).join('');
+        </tr>
+    `).join('');
 
     const content = `
     <div class="container">
-        <header class="topbar">
-            <h2>🚚 Panel de Despachos</h2>
-            <a href="/" class="btn-volver">⬅ Volver</a>
+
+        <header class="module-header">
+            <div>
+                <h2>🚚 Panel de Despachos</h2>
+                <p>Controla entregas, pedidos pendientes y rutas de despacho.</p>
+            </div>
+            <a href="/" class="btn-volver">Volver al Dashboard</a>
         </header>
 
-        <section style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;padding-bottom: 15px; position: sticky; top: 115px; z-index: 90; background: #f1f5f9;""">
-            <h4 style="margin: 0 0 15px 0;">+ Registrar Nuevo Despacho Manual</h4>
-            <form method="POST" action="/despacho" onsubmit="setTimeout(()=>this.reset(),100)" style="display:flex; flex-wrap:wrap; gap:10px; align-items: center;">
-                <input name="cliente" placeholder="Nombre del Cliente" required style="flex:1; min-width: 200px;">
-                <input name="contacto" placeholder="Teléfono" style="flex:1; min-width: 150px;">
-                <input name="direccion" placeholder="Dirección completa" required style="flex:2; min-width: 250px;">
-                <input name="pedido" placeholder="Detalle (Ej: 2x Clavos)" required style="flex:2; min-width: 250px;">
-                <input type="date" name="fecha_entrega" style="flex:1; min-width: 150px;">
-                <button style="margin: 0;">Guardar Despacho</button>
+        <section class="module-toolbar">
+            <h4>+ Registrar Despacho Manual</h4>
+
+            <form method="POST" action="/despacho" class="despacho-form" onsubmit="setTimeout(()=>this.reset(),100)">
+                <input name="cliente" placeholder="Cliente" required>
+                <input name="contacto" placeholder="Teléfono">
+                <input name="direccion" placeholder="Dirección completa" required>
+                <input name="pedido" placeholder="Detalle del pedido" required>
+                <input type="date" name="fecha_entrega">
+                <button class="btn-yellow">Guardar</button>
             </form>
         </section>
 
         <div class="tabla-container">
             <table>
                 <thead>
-                    <tr><th>ID</th><th>Cliente</th><th>Destino</th><th>Fecha Entrega</th><th>Pedido</th><th>Estado</th><th>Acciones</th></tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Dirección</th>
+                        <th>Fecha</th>
+                        <th>Pedido</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
                 </thead>
-                <tbody>${rowsHtml}</tbody>
+
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
             </table>
         </div>
+
     </div>`;
+
     res.send(layout('Despachos', content));
 });
 
