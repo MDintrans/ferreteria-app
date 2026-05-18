@@ -42,6 +42,7 @@ function layout(title, content, scripts = '', showSidebar = true) {
                 <a href="/inventario">📦 Inventario</a>
                 <a href="/productos">📊 Productos</a>
                 <a href="/ventas">💰 Ventas</a>
+                <a href="/cotizaciones">🧾 Cotizaciones</a>
                 <a href="/reportes">📈 Reportes</a>
                 <a href="/despacho">🚚 Despachos</a>
                 <a href="/proveedores">👷 Proveedores</a>
@@ -135,6 +136,29 @@ pool.connect()
             id SERIAL PRIMARY KEY, nombre TEXT, empresa TEXT, 
             telefono TEXT, observacion TEXT
         )`);
+
+        await pool.query(`
+CREATE TABLE IF NOT EXISTS cotizaciones (
+    id SERIAL PRIMARY KEY,
+    cliente TEXT,
+    telefono TEXT,
+    direccion TEXT,
+    observacion TEXT,
+    estado TEXT DEFAULT 'Pendiente',
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total INTEGER DEFAULT 0
+)`);
+
+await pool.query(`
+CREATE TABLE IF NOT EXISTS detalle_cotizaciones (
+    id SERIAL PRIMARY KEY,
+    cotizacion_id INTEGER,
+    producto_id INTEGER,
+    nombre TEXT,
+    precio INTEGER,
+    cantidad INTEGER
+)`);
+
         console.log("✅ Estructura de tablas verificada");
     } catch (err) {
         console.error("❌ Error iniciando tablas:", err.message);
@@ -971,6 +995,84 @@ app.get('/boleta/:id', async (req,res)=>{
 });
 
 // ---------------------------------------------------------
+// 🧾 COTIZACIONES
+// ---------------------------------------------------------
+
+app.get('/cotizaciones', async (req, res) => {
+    const { rows } = await pool.query(`
+        SELECT * FROM cotizaciones 
+        ORDER BY id DESC
+    `);
+
+    let rowsHtml = rows.map(c => `
+        <tr>
+            <td><strong>#${c.id}</strong></td>
+            <td>
+                <strong>${c.cliente || 'Sin cliente'}</strong>
+                <br>
+                <small>${c.telefono || 'Sin teléfono'}</small>
+            </td>
+            <td>${new Date(c.fecha).toLocaleDateString('es-CL')}</td>
+            <td>
+                <span class="${
+                    c.estado === 'Aprobada'
+                        ? 'estado-entregado'
+                        : c.estado === 'Rechazada'
+                            ? 'estado-pendiente'
+                            : 'estado-ruta'
+                }">
+                    ${c.estado}
+                </span>
+            </td>
+            <td class="text-price">$${Number(c.total || 0).toLocaleString('es-CL')}</td>
+            <td class="actions">
+                <form method="GET" action="/cotizacion/${c.id}">
+                    <button class="btn-yellow">Ver</button>
+                </form>
+            </td>
+        </tr>
+    `).join('');
+
+    const content = `
+    <div class="container">
+
+        <header class="module-header">
+            <div>
+                <h2>🧾 Cotizaciones</h2>
+                <p>Genera, revisa e imprime cotizaciones para clientes.</p>
+            </div>
+            <a href="/cotizaciones/nueva" class="btn-volver">+ Nueva Cotización</a>
+        </header>
+
+        <div class="tabla-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Total</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml || `
+                        <tr>
+                            <td colspan="6">Aún no hay cotizaciones creadas.</td>
+                        </tr>
+                    `}
+                </tbody>
+            </table>
+        </div>
+
+    </div>`;
+
+    res.send(layout('Cotizaciones', content));
+});
+
+
+// ---------------------------------------------------------
 // 📈 REPORTES
 // ---------------------------------------------------------
 
@@ -999,7 +1101,7 @@ app.get('/reportes', async (req, res) => {
                 <h2>📈 Centro de Reportes</h2>
                 <p>Resumen comercial, ventas, productos y alertas de inventario.</p>
             </div>
-            <a href="/" class="btn-volver">Volver al Dashboard</a>
+            <a href="/" class="btn-volver">Volver al Inicio</a>
         </header>
 
         <section class="kpi-grid">
@@ -1218,7 +1320,7 @@ app.get('/despacho', async (req, res) => {
                 <h2>🚚 Panel de Despachos</h2>
                 <p>Controla entregas, pedidos pendientes y rutas de despacho.</p>
             </div>
-            <a href="/" class="btn-volver">Volver al Dashboard</a>
+            <a href="/" class="btn-volver">Volver al Inicio</a>
         </header>
 
         <section class="module-toolbar">
