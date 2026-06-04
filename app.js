@@ -358,7 +358,7 @@ app.get('/inventario', async (req, res) => {
                 ? 'stock-badge stock-medio' 
                 : 'stock-badge stock-sano'
     }">
-        ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Sano'} · ${p.stock}
+        ${Number(p.stock).toLocaleString('es-CL')}
     </span>
 </td>
             <td class="actions">
@@ -485,7 +485,7 @@ app.get('/productos', async (req, res) => {
                             ? 'stock-badge stock-medio' 
                             : 'stock-badge stock-sano'
                 }">
-                    ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Sano'} · ${p.stock}
+                    ${Number(p.stock).toLocaleString('es-CL')}
                 </span>
             </td>
         </tr>`).join('');
@@ -576,7 +576,7 @@ const productosHtml = productos.map(p => `
                     ? 'stock-badge stock-medio'
                     : 'stock-badge stock-sano'
         }">
-            ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Disponible'} · ${p.stock}
+            ${Number(p.stock).toLocaleString('es-CL')}
         </span>
 
         <div class="pos-row-price">
@@ -1093,7 +1093,7 @@ app.get('/cotizaciones/nueva', async (req, res) => {
                         ? 'stock-badge stock-medio'
                         : 'stock-badge stock-sano'
             }">
-                ${p.stock <= 5 ? 'Crítico' : p.stock <= 15 ? 'Bajo' : 'Disponible'} · ${p.stock}
+                ${Number(p.stock).toLocaleString('es-CL')}
             </span>
 
             <div class="pos-row-price">
