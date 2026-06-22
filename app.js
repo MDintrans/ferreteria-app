@@ -515,7 +515,7 @@ app.get('/productos', async (req, res) => {
                         <th>ID</th>
                         <th>Producto</th>
                         <th>Precio</th>
-                        <th>Stock</th>
+                        <th>Estado Stock</th>
                     </tr>
                 </thead>
                 <tbody>${rowsHtml}</tbody>
@@ -1399,27 +1399,19 @@ app.get('/cotizacion/:id', async (req, res) => {
 
     const folio = `COT-${String(cotizacion.id).padStart(6, '0')}`;
 
+    const formatoMonto = (valor) => `
+        <span class="money">
+            <span class="currency">$</span>
+            <span class="amount">${Number(valor || 0).toLocaleString('es-CL')}</span>
+        </span>
+    `;
+
     const rowsHtml = detalles.map(d => `
         <tr>
             <td>${d.nombre}</td>
             <td class="center">${Number(d.cantidad).toLocaleString('es-CL')}</td>
-            <td class="right">
-    <div class="money">
-        <span class="currency">$</span>
-        <span class="amount">
-            ${Number(d.precio).toLocaleString('es-CL')}
-        </span>
-    </div>
-</td>
-
-<td class="right">
-    <div class="money">
-        <span class="currency">$</span>
-        <span class="amount">
-            ${Number(d.precio * d.cantidad).toLocaleString('es-CL')}
-        </span>
-    </div>
-</td>
+            <td class="right">${formatoMonto(d.precio)}</td>
+            <td class="right">${formatoMonto(d.precio * d.cantidad)}</td>
         </tr>
     `).join('');
 
@@ -1544,17 +1536,15 @@ app.get('/cotizacion/:id', async (req, res) => {
             table{
                 width:100%;
                 border-collapse:collapse;
+                table-layout:fixed;
                 overflow:hidden;
                 border-radius:14px;
                 margin-top:8px;
             }
 
-            thead{
+            th{
                 background:#111827;
                 color:white;
-            }
-
-            th{
                 padding:14px 12px;
                 text-align:left;
                 font-size:12px;
@@ -1573,12 +1563,38 @@ app.get('/cotizacion/:id', async (req, res) => {
                 background:#f8fafc;
             }
 
+            th:nth-child(1), td:nth-child(1){ width:42%; }
+            th:nth-child(2), td:nth-child(2){ width:16%; }
+            th:nth-child(3), td:nth-child(3){ width:21%; }
+            th:nth-child(4), td:nth-child(4){ width:21%; }
+
             .right{
                 text-align:right;
             }
 
             .center{
                 text-align:center;
+            }
+
+            .money{
+                display:grid;
+                grid-template-columns:18px minmax(70px, 1fr);
+                align-items:center;
+                justify-content:end;
+                width:120px;
+                margin-left:auto;
+                font-variant-numeric:tabular-nums;
+                white-space:nowrap;
+            }
+
+            .money .currency{
+                text-align:left;
+                font-weight:800;
+            }
+
+            .money .amount{
+                text-align:right;
+                font-weight:800;
             }
 
             .summary{
@@ -1588,7 +1604,7 @@ app.get('/cotizacion/:id', async (req, res) => {
             }
 
             .summary-box{
-                width:320px;
+                width:330px;
                 background:#f8fafc;
                 border:1px solid #e5e7eb;
                 border-radius:16px;
@@ -1596,20 +1612,28 @@ app.get('/cotizacion/:id', async (req, res) => {
             }
 
             .summary-row{
-                display:flex;
-                justify-content:space-between;
+                display:grid;
+                grid-template-columns:1fr 130px;
+                align-items:center;
+                gap:12px;
                 margin-bottom:10px;
                 font-size:14px;
                 color:#374151;
             }
 
             .summary-row.total{
-                margin-top:12px;
+                margin-top:14px;
+                margin-bottom:0;
                 padding-top:14px;
                 border-top:2px solid #111827;
                 font-size:22px;
                 font-weight:900;
                 color:#111827;
+            }
+
+            .summary-row.total .money{
+                width:140px;
+                font-size:22px;
             }
 
             .conditions{
@@ -1736,30 +1760,24 @@ app.get('/cotizacion/:id', async (req, res) => {
                     </tbody>
                 </table>
 
-<div class="summary-row">
-    <span>Neto</span>
-    <div class="money">
-        <span class="currency">$</span>
-        <span class="amount">${neto.toLocaleString('es-CL')}</span>
-    </div>
-</div>
+                <div class="summary">
+                    <div class="summary-box">
 
-<div class="summary-row">
-    <span>IVA 19%</span>
-    <div class="money">
-        <span class="currency">$</span>
-        <span class="amount">${iva.toLocaleString('es-CL')}</span>
-    </div>
-</div>
-
-<div class="summary-row total">
-    <span>Total</span>
-    <div class="money">
-        <span class="currency">$</span>
-        <span class="amount">${total.toLocaleString('es-CL')}</span>
-    </div>
-</div>
+                        <div class="summary-row">
+                            <span>Neto</span>
+                            ${formatoMonto(neto)}
                         </div>
+
+                        <div class="summary-row">
+                            <span>IVA 19%</span>
+                            ${formatoMonto(iva)}
+                        </div>
+
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            ${formatoMonto(total)}
+                        </div>
+
                     </div>
                 </div>
 
@@ -1788,6 +1806,7 @@ app.get('/cotizacion/:id', async (req, res) => {
 
     res.send(html);
 });
+
 
 // ---------------------------------------------------------
 // 📈 REPORTES
