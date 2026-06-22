@@ -515,7 +515,7 @@ app.get('/productos', async (req, res) => {
                         <th>ID</th>
                         <th>Producto</th>
                         <th>Precio</th>
-                        <th>Estado Stock</th>
+                        <th>Stock</th>
                     </tr>
                 </thead>
                 <tbody>${rowsHtml}</tbody>
@@ -1393,16 +1393,18 @@ app.get('/cotizacion/:id', async (req, res) => {
         [id]
     );
 
-    let subtotal = Number(cotizacion.total || 0);
-    let iva = Math.round(subtotal * 0.19);
-    let total = subtotal + iva;
+    const neto = Math.round(Number(cotizacion.total || 0) / 1.19);
+    const iva = Number(cotizacion.total || 0) - neto;
+    const total = Number(cotizacion.total || 0);
 
-    let rowsHtml = detalles.map(d => `
+    const folio = `COT-${String(cotizacion.id).padStart(6, '0')}`;
+
+    const rowsHtml = detalles.map(d => `
         <tr>
             <td>${d.nombre}</td>
-            <td>${d.cantidad}</td>
-            <td>$${Number(d.precio).toLocaleString('es-CL')}</td>
-            <td>$${Number(d.precio * d.cantidad).toLocaleString('es-CL')}</td>
+            <td class="center">${Number(d.cantidad).toLocaleString('es-CL')}</td>
+            <td class="right">$${Number(d.precio).toLocaleString('es-CL')}</td>
+            <td class="right">$${Number(d.precio * d.cantidad).toLocaleString('es-CL')}</td>
         </tr>
     `).join('');
 
@@ -1411,123 +1413,237 @@ app.get('/cotizacion/:id', async (req, res) => {
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Cotización ${cotizacion.id}</title>
+        <title>${folio}</title>
 
         <style>
+            *{
+                box-sizing:border-box;
+            }
+
             body{
-                font-family: Arial, sans-serif;
-                background:#f1f5f9;
+                margin:0;
+                font-family:Arial, Helvetica, sans-serif;
+                background:#e5e7eb;
                 color:#111827;
-                padding:30px;
+                padding:28px;
             }
 
-            .cotizacion-doc{
-                max-width:850px;
+            .doc{
+                max-width:900px;
                 margin:auto;
-                background:white;
-                padding:40px;
+                background:#ffffff;
                 border-radius:18px;
-                box-shadow:0 20px 50px rgba(0,0,0,.08);
+                overflow:hidden;
+                box-shadow:0 24px 60px rgba(15,23,42,.16);
             }
 
-            .doc-header{
+            .doc-top{
+                background:#111827;
+                color:white;
+                padding:30px 36px;
                 display:flex;
                 justify-content:space-between;
+                gap:24px;
                 align-items:flex-start;
-                border-bottom:3px solid #111827;
-                padding-bottom:20px;
-                margin-bottom:25px;
             }
 
-            .doc-header h1{
+            .brand h1{
                 margin:0;
                 font-size:30px;
+                letter-spacing:.3px;
             }
 
-            .doc-header p{
-                margin:4px 0;
-                color:#6b7280;
+            .brand p{
+                margin:6px 0 0;
+                color:#cbd5e1;
+                font-size:13px;
+                line-height:1.5;
             }
 
-            .doc-number{
+            .folio-box{
                 text-align:right;
+                background:rgba(255,255,255,.08);
+                border:1px solid rgba(255,255,255,.14);
+                border-radius:16px;
+                padding:18px 20px;
+                min-width:220px;
             }
 
-            .doc-number strong{
+            .folio-box span{
+                display:block;
+                color:#facc15;
+                font-size:12px;
+                font-weight:800;
+                letter-spacing:1px;
+                text-transform:uppercase;
+                margin-bottom:6px;
+            }
+
+            .folio-box strong{
+                display:block;
                 font-size:24px;
             }
 
-            .cliente-box{
-                background:#f8fafc;
-                border:1px solid #e5e7eb;
-                border-radius:14px;
-                padding:18px;
-                margin-bottom:25px;
+            .folio-box small{
+                display:block;
+                margin-top:8px;
+                color:#cbd5e1;
             }
 
-            .cliente-box p{
-                margin:6px 0;
+            .doc-body{
+                padding:32px 36px 36px;
+            }
+
+            .info-grid{
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:18px;
+                margin-bottom:28px;
+            }
+
+            .info-card{
+                background:#f8fafc;
+                border:1px solid #e5e7eb;
+                border-radius:16px;
+                padding:18px;
+            }
+
+            .info-card h3{
+                margin:0 0 12px;
+                font-size:15px;
+                text-transform:uppercase;
+                letter-spacing:.7px;
+                color:#334155;
+            }
+
+            .info-card p{
+                margin:7px 0;
+                font-size:14px;
+                color:#374151;
+            }
+
+            .info-card strong{
+                color:#111827;
             }
 
             table{
                 width:100%;
                 border-collapse:collapse;
-                margin-top:20px;
+                overflow:hidden;
+                border-radius:14px;
+                margin-top:8px;
+            }
+
+            thead{
+                background:#111827;
+                color:white;
             }
 
             th{
-                background:#111827;
-                color:white;
+                padding:14px 12px;
                 text-align:left;
-                padding:12px;
-                font-size:13px;
+                font-size:12px;
+                letter-spacing:.5px;
+                text-transform:uppercase;
             }
 
             td{
-                padding:12px;
+                padding:14px 12px;
                 border-bottom:1px solid #e5e7eb;
+                font-size:14px;
+                color:#1f2937;
             }
 
-            .totales{
-                margin-top:25px;
-                max-width:300px;
-                margin-left:auto;
+            tbody tr:nth-child(even){
+                background:#f8fafc;
             }
 
-            .totales p{
+            .right{
+                text-align:right;
+            }
+
+            .center{
+                text-align:center;
+            }
+
+            .summary{
+                display:flex;
+                justify-content:flex-end;
+                margin-top:24px;
+            }
+
+            .summary-box{
+                width:320px;
+                background:#f8fafc;
+                border:1px solid #e5e7eb;
+                border-radius:16px;
+                padding:18px;
+            }
+
+            .summary-row{
                 display:flex;
                 justify-content:space-between;
-                margin:8px 0;
+                margin-bottom:10px;
+                font-size:14px;
+                color:#374151;
             }
 
-            .totales .final{
-                font-size:22px;
-                font-weight:bold;
+            .summary-row.total{
+                margin-top:12px;
+                padding-top:14px;
                 border-top:2px solid #111827;
-                padding-top:10px;
+                font-size:22px;
+                font-weight:900;
+                color:#111827;
+            }
+
+            .conditions{
+                margin-top:28px;
+                padding:18px;
+                border-radius:16px;
+                background:#fffbeb;
+                border:1px solid #fde68a;
+                color:#713f12;
+                font-size:13px;
+                line-height:1.6;
+            }
+
+            .footer{
+                margin-top:28px;
+                display:flex;
+                justify-content:space-between;
+                gap:20px;
+                color:#6b7280;
+                font-size:12px;
+                border-top:1px solid #e5e7eb;
+                padding-top:18px;
             }
 
             .acciones{
-                max-width:850px;
-                margin:20px auto;
+                max-width:900px;
+                margin:18px auto 0;
                 display:flex;
-                gap:10px;
                 justify-content:flex-end;
+                gap:10px;
             }
 
-            button,
-            a{
+            .acciones a,
+            .acciones button{
+                border:none;
+                border-radius:14px;
+                padding:13px 18px;
+                font-weight:800;
+                cursor:pointer;
+                text-decoration:none;
+                font-size:14px;
+            }
+
+            .acciones a{
                 background:#111827;
                 color:white;
-                border:none;
-                padding:12px 18px;
-                border-radius:12px;
-                font-weight:bold;
-                text-decoration:none;
-                cursor:pointer;
             }
 
-            .btn-print{
+            .acciones button{
                 background:#facc15;
                 color:#111827;
             }
@@ -1538,13 +1654,14 @@ app.get('/cotizacion/:id', async (req, res) => {
                     padding:0;
                 }
 
-                .acciones{
-                    display:none;
-                }
-
-                .cotizacion-doc{
+                .doc{
                     box-shadow:none;
                     border-radius:0;
+                    max-width:100%;
+                }
+
+                .acciones{
+                    display:none;
                 }
             }
         </style>
@@ -1552,71 +1669,94 @@ app.get('/cotizacion/:id', async (req, res) => {
 
     <body>
 
-        <div class="cotizacion-doc">
+        <div class="doc">
 
-            <div class="doc-header">
-                <div>
+            <div class="doc-top">
+                <div class="brand">
                     <h1>Ferretería Los Nogales</h1>
-                    <p>RUT: 00.000.000-0</p>
-                    <p>Dirección: Calle Principal 123</p>
-                    <p>Teléfono: +56 9 1234 5678</p>
+                    <p>
+                        Sistema de ventas y cotizaciones<br>
+                        Dirección: Calle Principal 123 · Tel: +56 9 1234 5678<br>
+                        RUT: 00.000.000-0
+                    </p>
                 </div>
 
-                <div class="doc-number">
-                    <p>COTIZACIÓN</p>
-                    <strong>N° ${cotizacion.id}</strong>
-                    <p>${new Date(cotizacion.fecha).toLocaleDateString('es-CL')}</p>
+                <div class="folio-box">
+                    <span>Cotización</span>
+                    <strong>${folio}</strong>
+                    <small>${new Date(cotizacion.fecha).toLocaleDateString('es-CL')}</small>
                 </div>
             </div>
 
-            <div class="cliente-box">
-                <p><strong>Cliente:</strong> ${cotizacion.cliente}</p>
-                <p><strong>Teléfono:</strong> ${cotizacion.telefono || '-'}</p>
-                <p><strong>Dirección:</strong> ${cotizacion.direccion || '-'}</p>
-                <p><strong>Observación:</strong> ${cotizacion.observacion || '-'}</p>
+            <div class="doc-body">
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>Datos del cliente</h3>
+                        <p><strong>Cliente:</strong> ${cotizacion.cliente || '-'}</p>
+                        <p><strong>Teléfono:</strong> ${cotizacion.telefono || '-'}</p>
+                        <p><strong>Dirección:</strong> ${cotizacion.direccion || '-'}</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Condición comercial</h3>
+                        <p><strong>Estado:</strong> ${cotizacion.estado || 'Pendiente'}</p>
+                        <p><strong>Validez:</strong> 7 días</p>
+                        <p><strong>Observación:</strong> ${cotizacion.observacion || '-'}</p>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th class="center">Cantidad</th>
+                            <th class="right">Precio Unit.</th>
+                            <th class="right">Total Línea</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+
+                <div class="summary">
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span>Neto</span>
+                            <strong>$${neto.toLocaleString('es-CL')}</strong>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>IVA 19%</span>
+                            <strong>$${iva.toLocaleString('es-CL')}</strong>
+                        </div>
+
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <strong>$${total.toLocaleString('es-CL')}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="conditions">
+                    <strong>Condiciones:</strong>
+                    Los valores indicados están sujetos a disponibilidad de stock al momento de confirmar la compra.
+                    Esta cotización tiene una validez de 7 días corridos desde su fecha de emisión.
+                </div>
+
+                <div class="footer">
+                    <div>Ferretería Los Nogales · Sistema ERP</div>
+                    <div>Documento generado automáticamente</div>
+                </div>
+
             </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unit.</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    ${rowsHtml}
-                </tbody>
-            </table>
-
-            <div class="totales">
-                <p>
-                    <span>Neto</span>
-                    <strong>$${subtotal.toLocaleString('es-CL')}</strong>
-                </p>
-
-                <p>
-                    <span>IVA 19%</span>
-                    <strong>$${iva.toLocaleString('es-CL')}</strong>
-                </p>
-
-                <p class="final">
-                    <span>Total</span>
-                    <strong>$${total.toLocaleString('es-CL')}</strong>
-                </p>
-            </div>
-
-            <p style="margin-top:30px;color:#6b7280;">
-                Validez de la cotización: 7 días. Valores sujetos a disponibilidad de stock.
-            </p>
-
         </div>
 
         <div class="acciones">
             <a href="/cotizaciones">Volver</a>
-            <button class="btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+            <button onclick="window.print()">Imprimir / Guardar PDF</button>
         </div>
 
     </body>
