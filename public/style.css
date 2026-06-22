@@ -1826,3 +1826,21 @@ td small{
     min-width:80px;
     text-align:right;
 }
+
+.money{
+    display:grid;
+    grid-template-columns:16px 1fr;
+    align-items:center;
+    min-width:120px;
+    font-variant-numeric:tabular-nums;
+}
+
+.money .currency{
+    text-align:left;
+    font-weight:800;
+}
+
+.money .amount{
+    text-align:right;
+    font-weight:800;
+}

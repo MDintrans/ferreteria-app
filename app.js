@@ -1736,35 +1736,28 @@ app.get('/cotizacion/:id', async (req, res) => {
                     </tbody>
                 </table>
 
-                <div class="summary">
-                    <div class="summary-box">
-                        <div class="summary-row">
-                            <span>Neto</span>
-                            <div class="money">
-    <span class="currency">$</span>
-    <span class="amount">
-        ${neto.toLocaleString('es-CL')}
-    </span>
+<div class="summary-row">
+    <span>Neto</span>
+    <div class="money">
+        <span class="currency">$</span>
+        <span class="amount">${neto.toLocaleString('es-CL')}</span>
+    </div>
 </div>
-                        </div>
 
-                        <div class="summary-row">
-                            <span>IVA 19%</span>
-                            <div class="money">
-    <span class="currency">$</span>
-    <span class="amount">
-        ${neto.toLocaleString('es-CL')}
-    </span>
+<div class="summary-row">
+    <span>IVA 19%</span>
+    <div class="money">
+        <span class="currency">$</span>
+        <span class="amount">${iva.toLocaleString('es-CL')}</span>
+    </div>
 </div>
-                        </div>
 
-                        <div class="summary-row total">
-                            <span>Total</span>
-                            <div class="money">
-    <span class="currency">$</span>
-    <span class="amount">
-        ${neto.toLocaleString('es-CL')}
-    </span>
+<div class="summary-row total">
+    <span>Total</span>
+    <div class="money">
+        <span class="currency">$</span>
+        <span class="amount">${total.toLocaleString('es-CL')}</span>
+    </div>
 </div>
                         </div>
                     </div>
