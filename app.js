@@ -1403,8 +1403,23 @@ app.get('/cotizacion/:id', async (req, res) => {
         <tr>
             <td>${d.nombre}</td>
             <td class="center">${Number(d.cantidad).toLocaleString('es-CL')}</td>
-            <td class="right">$${Number(d.precio).toLocaleString('es-CL')}</td>
-            <td class="right">$${Number(d.precio * d.cantidad).toLocaleString('es-CL')}</td>
+            <td class="right">
+    <div class="money">
+        <span class="currency">$</span>
+        <span class="amount">
+            ${Number(d.precio).toLocaleString('es-CL')}
+        </span>
+    </div>
+</td>
+
+<td class="right">
+    <div class="money">
+        <span class="currency">$</span>
+        <span class="amount">
+            ${Number(d.precio * d.cantidad).toLocaleString('es-CL')}
+        </span>
+    </div>
+</td>
         </tr>
     `).join('');
 
@@ -1725,17 +1740,32 @@ app.get('/cotizacion/:id', async (req, res) => {
                     <div class="summary-box">
                         <div class="summary-row">
                             <span>Neto</span>
-                            <strong>$${neto.toLocaleString('es-CL')}</strong>
+                            <div class="money">
+    <span class="currency">$</span>
+    <span class="amount">
+        ${neto.toLocaleString('es-CL')}
+    </span>
+</div>
                         </div>
 
                         <div class="summary-row">
                             <span>IVA 19%</span>
-                            <strong>$${iva.toLocaleString('es-CL')}</strong>
+                            <div class="money">
+    <span class="currency">$</span>
+    <span class="amount">
+        ${neto.toLocaleString('es-CL')}
+    </span>
+</div>
                         </div>
 
                         <div class="summary-row total">
                             <span>Total</span>
-                            <strong>$${total.toLocaleString('es-CL')}</strong>
+                            <div class="money">
+    <span class="currency">$</span>
+    <span class="amount">
+        ${neto.toLocaleString('es-CL')}
+    </span>
+</div>
                         </div>
                     </div>
                 </div>

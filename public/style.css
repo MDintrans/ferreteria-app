@@ -1807,3 +1807,22 @@ td small{
         grid-column:span 1;
     }
 }
+
+.money{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:4px;
+    font-variant-numeric: tabular-nums;
+}
+
+.money .currency{
+    width:12px;
+    text-align:left;
+    font-weight:700;
+}
+
+.money .amount{
+    min-width:80px;
+    text-align:right;
+}
